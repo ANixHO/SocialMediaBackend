@@ -2,7 +2,7 @@ package org.socialmedia.controller;
 
 import org.socialmedia.model.User;
 import org.socialmedia.service.CustomUserDetailService;
-import org.socialmedia.service.UserService;
+import org.socialmedia.service.impl.UserServiceImpl;
 import org.socialmedia.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class AuthenticationController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @PostMapping("/authentication")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest)

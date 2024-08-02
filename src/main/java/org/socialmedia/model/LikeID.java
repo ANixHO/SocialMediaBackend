@@ -20,6 +20,9 @@ public class LikeID implements Serializable {
         this.userId = userId;
     }
 
+    public LikeID() {
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

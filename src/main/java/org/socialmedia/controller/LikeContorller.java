@@ -14,7 +14,6 @@ public class LikeContorller {
 
     @Autowired
     private LikeService likeService;
-
     @Autowired
     private JwtUtils jwtUtils;
 

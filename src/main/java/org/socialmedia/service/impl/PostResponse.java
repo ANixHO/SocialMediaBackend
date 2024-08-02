@@ -1,7 +1,8 @@
-package org.socialmedia.service;
+package org.socialmedia.service.impl;
 
 import org.socialmedia.model.Comment;
 import org.socialmedia.model.Post;
+import org.socialmedia.model.PostContent;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ public class PostResponse {
     private Post post;
     private long likeCount;
     private List<Comment> recentComments;
+    private PostContent postContent;
 
     public PostResponse(Post post) {
         this.post = post;
@@ -33,5 +35,13 @@ public class PostResponse {
 
     public void setRecentComments(List<Comment> recentComments) {
         this.recentComments = recentComments;
+    }
+
+    public PostContent getPostContent() {
+        return postContent;
+    }
+
+    public void setPostContent(PostContent postContent) {
+        this.postContent = postContent;
     }
 }

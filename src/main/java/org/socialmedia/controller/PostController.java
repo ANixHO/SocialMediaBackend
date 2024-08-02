@@ -2,9 +2,9 @@ package org.socialmedia.controller;
 
 import org.socialmedia.model.Post;
 import org.socialmedia.model.PostContent;
-import org.socialmedia.service.PostResponse;
-import org.socialmedia.service.PostService;
-import org.socialmedia.service.UserService;
+import org.socialmedia.service.impl.PostResponse;
+import org.socialmedia.service.impl.PostServiceImpl;
+import org.socialmedia.service.impl.UserServiceImpl;
 import org.socialmedia.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,10 +19,10 @@ import java.util.List;
 public class PostController {
 
     @Autowired
-    private PostService postService;
+    private PostServiceImpl postService;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -45,7 +45,7 @@ public class PostController {
         return ResponseEntity.ok(postService.createPost(post, postContent));
     }
 
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Post> updatePost(@PathVariable Long id, @RequestBody Post post, @RequestBody PostContent postContent){
         Long userId = jwtUtils.getCurrentUserId();
@@ -56,7 +56,7 @@ public class PostController {
         return ResponseEntity.ok(postService.updatePost(id,post,postContent));
     }
 
-    @PostMapping("/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deletePost(@PathVariable Long id){
         Long userId = jwtUtils.getCurrentUserId();

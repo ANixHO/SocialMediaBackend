@@ -20,10 +20,10 @@ public class UserController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.createUser(user));
-    }
+//    @PostMapping("/register")
+//    public ResponseEntity<User> registerUser(@RequestBody User user) {
+//        return ResponseEntity.ok(userService.createUser(user));
+//    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
