@@ -5,19 +5,17 @@ import org.socialmedia.model.Comment;
 import java.util.List;
 
 public interface CommentService {
-    Comment addComment(Long postId, Long userId, String content);
+    Comment addComment(Long postId, Comment comment);
+
+    Comment addCommentWithParentComment(Long postId, Long parentCommentId, Comment comment);
 
     Comment getCommentById(Long id);
 
+    List<Comment> getRecentCommentByPostId(Long postId, int limit);
+
     List<Comment> getCommentByPostId(Long postId);
 
-    List<Comment> getCommentByUserId(Long userId);
-
-    Comment updateComment(Long id, String content);
+    Comment updateComment(Long id, Comment comment);
 
     void deleteComment(Long id);
-
-    boolean isCommentOwnedByUser(Long commentId, Long userId);
-
-    List<Comment> getRecentCommentByPostId(Long postId, int limit);
 }

@@ -2,102 +2,123 @@ package org.socialmedia.service.impl;
 
 import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.Exceptions.PostNotFoundException;
+import org.socialmedia.model.Image;
 import org.socialmedia.model.Post;
-import org.socialmedia.model.PostContent;
-import org.socialmedia.repository.PostContectRepository;
+import org.socialmedia.repository.ImageRepository;
 import org.socialmedia.repository.PostRepository;
 import org.socialmedia.service.CommentService;
-import org.socialmedia.service.LikeService;
 import org.socialmedia.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
-    @Autowired
-    private LikeService likeService;
+
     @Autowired
     private CommentService commentService;
     @Autowired
     private PostRepository postRepository;
     @Autowired
-    private PostContectRepository postContentRepository;
+    private ImageRepository imageRepository;
 
     @Transactional
-    public Post createPost(Post post, PostContent postContent){
-        if(post.getTitle() == null || post.getTitle().trim().isEmpty()){
+    public Post createPost(Post post, List<Image> imageList) {
+        if (post.getTitle() == null || post.getTitle().trim().isEmpty()) {
             throw new InvalidInputException("Post title can not be empty");
+        }
+        if (post.getContentText() == null || post.getContentText().trim().isEmpty()) {
+            throw new InvalidInputException("Post content can not be empty");
         }
 
         post.setCreatedAt(LocalDateTime.now());
+        post.setLikePost(false);
         Post savedPost = postRepository.save(post);
+        Long savedPostId = savedPost.getId();
 
-        postContent.setPostId(savedPost.getId());
-        postContent.setLastEditedAt(savedPost.getCreatedAt());
-        PostContent savedPostContent = postContentRepository.save(postContent);
 
-        savedPost.setMongodbContentID(savedPostContent.getId());
-        return postRepository.save(savedPost);
+        for (Image image : imageList) {
+            image.setPostId(savedPostId);
+            image.setStatus("exist");
+            image.setCreatedAt(LocalDateTime.now());
+            imageRepository.save(image);
+        }
+
+        return savedPost;
     }
 
-    public Post getPostById(Long id){
-        return postRepository.findById(id)
-                .orElseThrow(()-> new PostNotFoundException("Post not found with id: " + id));
-    }
-
-    public PostResponse getPostResponseById(Long id){
+    public PostResponse getPostResponseByPostId(Long id) {
         PostResponse postResponse = new PostResponse(getPostById(id));
-        PostContent existingPostContent = postContentRepository.findByPostId(id);
-
-        postResponse.setLikeCount(likeService.getLikeCountForPost(id));
-        postResponse.setRecentComments(commentService.getRecentCommentByPostId(id,5));
-        postResponse.setPostContent(existingPostContent);
-        existingPostContent.setViewCount(existingPostContent.getViewCount() + 1);
-        postContentRepository.save(existingPostContent);
+        postResponse.setRecentComments(commentService.getRecentCommentByPostId(id, 5));
+        postResponse.setImageList(imageRepository.searchImageByPostId(id));
 
         return postResponse;
     }
 
 
-    public List<Post> getAllPosts(){
-        return postRepository.findAll();
+    public List<PostResponse> getAllPostResponses() {
+        List<Post> postList = postRepository.findAll();
+        List<PostResponse> postResponses = new ArrayList<>();
+
+        for(Post post : postList){
+            postResponses.add(getPostResponseByPostId(post.getId()));
+        }
+
+        return postResponses;
+    }
+
+    public Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with id: " + id));
     }
 
     @Transactional
-    public Post updatePost(Long id, Post post, PostContent postContent){
+    public Post updatePost(Long id, Post post, List<Image> imageList) {
         Post existingPost = getPostById(id);
 
-        if(post.getTitle() == null){
+        if (post.getTitle() == null) {
             post.setTitle(existingPost.getTitle());
         }
 
-        existingPost.setUpdatedAt(LocalDateTime.now());
-        Post updatedPost = postRepository.save(post);
-
-        PostContent existingPostContent = postContentRepository.findByPostId(id);
-
-        if(postContent.getFullContent() != null){
-            existingPostContent.setFullContent(postContent.getFullContent());
+        for (Image image : imageList){
+            if(image.getStatus().equals("delete")){
+                imageRepository.deleteById(image.getId());
+            } else if (image.getStatus().equals("exist")) {
+                continue;
+            }else if (image.getStatus().equals("new")){
+                image.setPostId(id);
+                image.setCreatedAt(LocalDateTime.now());
+                imageRepository.save(image);
+            }
         }
-        existingPostContent.setLastEditedAt(existingPost.getUpdatedAt());
-        postContentRepository.save(existingPostContent);
-        return updatedPost;
+
+        existingPost.setUpdatedAt(LocalDateTime.now());
+
+        return postRepository.save(post);
     }
 
     @Transactional
-    public void deletePost(Long id){
+    public void deletePost(Long id) {
         Post post = getPostById(id);
-        postContentRepository.deleteById(post.getMongodbContentID());
+        imageRepository.deleteImageByPostId(id);
         postRepository.deleteById(id);
     }
 
-    public boolean isPostOwnedByUser(Long postId, Long userId){
+    public boolean likeFunction(Long postId) {
         Post post = getPostById(postId);
-        return post.getUser().getId().equals(userId);
+        if (post.isLikePost()) {
+            post.setLikePost(false);
+        } else {
+            post.setLikePost(true);
+        }
+        postRepository.save(post);
 
+        return post.isLikePost();
     }
+
+
 }

@@ -10,21 +10,13 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private long postId;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    private long parentCommentId;
 
-    @ManyToOne
-    @JoinColumn(name = "comment_id")
-    private Comment parentComment;
-
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
@@ -32,36 +24,29 @@ public class Comment {
 
     private LocalDateTime updatedAt;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public User getUser() {
-        return user;
+
+    public long getPostId() {
+        return postId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setPostId(long postId) {
+        this.postId = postId;
     }
 
-    public Post getPost() {
-        return post;
+    public long getParentCommentId() {
+        return parentCommentId;
     }
 
-    public void setPost(Post post) {
-        this.post = post;
-    }
-
-    public Comment getParentComment() {
-        return parentComment;
-    }
-
-    public void setParentComment(Comment parentComment) {
-        this.parentComment = parentComment;
+    public void setParentCommentId(long parentCommentId) {
+        this.parentCommentId = parentCommentId;
     }
 
     public String getContent() {

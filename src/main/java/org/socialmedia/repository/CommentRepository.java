@@ -12,8 +12,8 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostId(Long postId);
-    List<Comment> findByUserId(Long userId);
+    List<Comment> findByParentCommentId(Long commentId);
 
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM Comment c WHERE c.postId = :postId ORDER BY c.createdAt DESC")
     List<Comment> findMostRecentByPostId(@Param("postId") Long postId, Pageable pageable);
 }
