@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Long> {
-    List<Image> searchImageByPostId(Long postId);
-    void deleteImageByPostId(Long postId);
+    List<Image> findByPostId(Long postId);
+
 }

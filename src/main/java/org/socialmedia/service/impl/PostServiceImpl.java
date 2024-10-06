@@ -2,16 +2,17 @@ package org.socialmedia.service.impl;
 
 import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.Exceptions.PostNotFoundException;
-import org.socialmedia.model.Image;
 import org.socialmedia.model.Post;
-import org.socialmedia.repository.ImageRepository;
 import org.socialmedia.repository.PostRepository;
 import org.socialmedia.service.CommentService;
+import org.socialmedia.service.ImageService;
 import org.socialmedia.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +25,11 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private PostRepository postRepository;
     @Autowired
-    private ImageRepository imageRepository;
+    private ImageService imageService;
+
 
     @Transactional
-    public Post createPost(Post post, List<Image> imageList) {
+    public Post createPost(Post post, List<MultipartFile> imageFiles) throws IOException {
         if (post.getTitle() == null || post.getTitle().trim().isEmpty()) {
             throw new InvalidInputException("Post title can not be empty");
         }
@@ -35,26 +37,41 @@ public class PostServiceImpl implements PostService {
             throw new InvalidInputException("Post content can not be empty");
         }
 
+
         post.setCreatedAt(LocalDateTime.now());
         post.setLikePost(false);
         Post savedPost = postRepository.save(post);
         Long savedPostId = savedPost.getId();
 
-
-        for (Image image : imageList) {
-            image.setPostId(savedPostId);
-            image.setStatus("exist");
-            image.setCreatedAt(LocalDateTime.now());
-            imageRepository.save(image);
-        }
+        imageService.saveImage(savedPostId, imageFiles);
 
         return savedPost;
+    }
+
+    @Transactional
+    public Post updatePost(Long id, Post post, List<MultipartFile> imageFiles) {
+        Post existingPost = getPostById(id);
+
+        if (post.getTitle() != null) {
+            existingPost.setTitle(post.getTitle());
+        }
+
+        if (post.getContentText() != null) {
+            existingPost.setContentText(post.getContentText());
+        }
+
+        existingPost.setUpdatedAt(LocalDateTime.now());
+        if (!imageFiles.isEmpty()) {
+            imageService.saveImage(id, imageFiles);
+        }
+
+        return postRepository.save(existingPost);
     }
 
     public PostResponse getPostResponseByPostId(Long id) {
         PostResponse postResponse = new PostResponse(getPostById(id));
         postResponse.setRecentComments(commentService.getRecentCommentByPostId(id, 5));
-        postResponse.setImageList(imageRepository.searchImageByPostId(id));
+        postResponse.setImageIdList(imageService.getImageUrlsByPostId(id));
 
         return postResponse;
     }
@@ -64,7 +81,7 @@ public class PostServiceImpl implements PostService {
         List<Post> postList = postRepository.findAll();
         List<PostResponse> postResponses = new ArrayList<>();
 
-        for(Post post : postList){
+        for (Post post : postList) {
             postResponses.add(getPostResponseByPostId(post.getId()));
         }
 
@@ -76,35 +93,10 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new PostNotFoundException("Post not found with id: " + id));
     }
 
-    @Transactional
-    public Post updatePost(Long id, Post post, List<Image> imageList) {
-        Post existingPost = getPostById(id);
-
-        if (post.getTitle() == null) {
-            post.setTitle(existingPost.getTitle());
-        }
-
-        for (Image image : imageList){
-            if(image.getStatus().equals("delete")){
-                imageRepository.deleteById(image.getId());
-            } else if (image.getStatus().equals("exist")) {
-                continue;
-            }else if (image.getStatus().equals("new")){
-                image.setPostId(id);
-                image.setCreatedAt(LocalDateTime.now());
-                imageRepository.save(image);
-            }
-        }
-
-        existingPost.setUpdatedAt(LocalDateTime.now());
-
-        return postRepository.save(post);
-    }
 
     @Transactional
     public void deletePost(Long id) {
-        Post post = getPostById(id);
-        imageRepository.deleteImageByPostId(id);
+        imageService.deleteImageByPostId(id);
         postRepository.deleteById(id);
     }
 

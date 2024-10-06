@@ -3,11 +3,9 @@ package org.socialmedia.service.impl;
 import org.socialmedia.Exceptions.CommentNotFoundException;
 import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.model.Comment;
-import org.socialmedia.model.Post;
 import org.socialmedia.repository.CommentRepository;
 import org.socialmedia.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +16,7 @@ import java.util.List;
 public class CommentServiceImpl implements CommentService {
     @Autowired
     private CommentRepository commentRepository;
-    @Autowired
-    private GetPost getPost;
+
 
 /*
     add comment
@@ -56,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public List<Comment> getRecentCommentByPostId(Long postId, int limit) {
-        return commentRepository.findMostRecentByPostId(postId, PageRequest.of(0, limit));
+        return commentRepository.findByPostId(postId);
     }
 
 /*

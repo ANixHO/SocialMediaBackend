@@ -19,12 +19,15 @@ public class CommentController {
     add comment
  */
     @PostMapping("/post/{postId}")
-    public ResponseEntity<Comment> addComment(@PathVariable Long postId, @RequestBody Comment comment) {
+    public ResponseEntity<Comment> addComment(@PathVariable Long postId,
+                                              @RequestBody Comment comment) {
         return ResponseEntity.ok(commentService.addComment(postId, comment));
     }
 
     @PostMapping("/post/{postId}/{parentCommentId}")
-    public ResponseEntity<Comment> addCommentWithParentComment(@PathVariable Long postId, @PathVariable Long parentCommentId, @RequestBody Comment comment) {
+    public ResponseEntity<Comment> addCommentWithParentComment(@PathVariable Long postId,
+                                                               @PathVariable Long parentCommentId,
+                                                               @RequestBody Comment comment) {
         return ResponseEntity.ok(commentService.addCommentWithParentComment(postId, parentCommentId, comment));
     }
 
@@ -40,7 +43,8 @@ public class CommentController {
     update comment
  */
     @PutMapping("/{id}")
-    public ResponseEntity<Comment> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
+    public ResponseEntity<Comment> updateComment(@PathVariable Long id,
+                                                 @RequestBody Comment comment) {
         return ResponseEntity.ok(commentService.updateComment(id, comment));
     }
 

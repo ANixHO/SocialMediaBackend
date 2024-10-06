@@ -16,19 +16,12 @@ public class Image {
 
     private LocalDateTime createdAt;
 
-/*
-    new: newly added image
-    delete: need to delete
-    exist: already existed and no action needed
- */
-    @Transient
-    private String status;
 
     @Column(nullable = false)
-    private String url;
+    private String filePath;
 
-    public Image(String url) {
-        this.url = url;
+    public Image(String filePath) {
+        this.filePath = filePath;
     }
 
     public Image() {
@@ -59,19 +52,14 @@ public class Image {
         this.createdAt = createdAt;
     }
 
-    public String getUrl() {
-        return url;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
-    public String getStatus() {
-        return status;
-    }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+
 }

@@ -1,7 +1,6 @@
 package org.socialmedia.service.impl;
 
 import org.socialmedia.model.Comment;
-import org.socialmedia.model.Image;
 import org.socialmedia.model.Post;
 
 import java.util.List;
@@ -9,8 +8,8 @@ import java.util.List;
 public class PostResponse {
 
     private Post post;
-    private List<Image> imageList;
     private List<Comment> recentComments;
+    private List<Long> imageIdList;
 
     public PostResponse(Post post) {
         this.post = post;
@@ -32,11 +31,11 @@ public class PostResponse {
         this.post = post;
     }
 
-    public List<Image> getImageList() {
-        return imageList;
+    public List<Long> getImageIdList() {
+        return imageIdList;
     }
 
-    public void setImageList(List<Image> imageList) {
-        this.imageList = imageList;
+    public void setImageIdList(List<Long> imageIdList) {
+        this.imageIdList = imageIdList;
     }
 }

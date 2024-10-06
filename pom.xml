@@ -9,37 +9,30 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.social-media</groupId>
-    <artifactId>SocialMedia</artifactId>
+    <artifactId>SocialMediaBackend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>SocialMedia</name>
-    <description>SocialMedia</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
-    <properties>
-        <java.version>17</java.version>
-    </properties>
     <dependencies>
 
-<!--       spring boot starter  -->
+        <!--  spring boot starter  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!--  spring boot security-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
 
 
-<!--        database connector  -->
+        <!--  database connector  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -56,7 +49,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
+
+    <description>SocialMedia</description>
+    <properties>
+        <java.version>17</java.version>
+    </properties>
 
     <build>
         <plugins>

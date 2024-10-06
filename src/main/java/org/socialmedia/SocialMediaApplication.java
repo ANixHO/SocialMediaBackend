@@ -1,9 +1,19 @@
 package org.socialmedia;
 
+import org.socialmedia.model.Role;
+import org.socialmedia.model.User;
+import org.socialmedia.repository.RoleRepository;
+import org.socialmedia.repository.UserRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @SpringBootApplication
 @EntityScan("org.socialmedia.model")
@@ -12,6 +22,21 @@ public class SocialMediaApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SocialMediaApplication.class, args);
+    }
+
+    @Bean
+    CommandLineRunner run(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder){
+        return argus -> {
+            if(roleRepository.findByAuthority("ADMIN").isPresent()) return ;
+            Role adminRole = roleRepository.save(new Role("ADMIN"));
+            roleRepository.save(new Role("USER"));
+
+            Set<Role> roles = new HashSet<>();
+            roles.add(adminRole);
+
+            User admin = new User("admin", passwordEncoder.encode("password") , roles);
+            userRepository.save(admin);
+        };
     }
 
 }
