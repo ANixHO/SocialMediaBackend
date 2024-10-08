@@ -1,18 +1,19 @@
 package org.socialmedia.service;
+import org.socialmedia.model.Image;
+import org.socialmedia.model.Post;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public interface ImageService {
-    byte[] getImageDataById(Long imageId) throws IOException;
+    Optional<Image> getImage(Long imageId);
 
-    List<Long> getImageUrlsByPostId(Long postId);
+    List<Image> getPostImages(Post post);
 
-    void deleteImageById(Long imageId);
+    void deleteImage(Long imageId);
 
-    void deleteImageByPostId(Long postId);
-
-    void saveImage(Long postId, List<MultipartFile> imageFiles);
+    void saveImage(Post post, MultipartFile imageFile, int order) throws IOException;
 
 }

@@ -1,28 +1,27 @@
 package org.socialmedia.model;
 
 import jakarta.persistence.*;
+import org.bson.types.Binary;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "images")
+@Document(collection = "images")
 public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long postId;
 
-    private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
+    private Binary image;
 
-    @Column(nullable = false)
-    private String filePath;
-
-    public Image(String filePath) {
-        this.filePath = filePath;
-    }
+    private int order;
 
     public Image() {
 
@@ -36,30 +35,28 @@ public class Image {
         this.id = id;
     }
 
-    public Long getPostId() {
-        return postId;
+
+    public Post getPost() {
+        return post;
     }
 
-    public void setPostId(Long postId) {
-        this.postId = postId;
+    public void setPost(Post post) {
+        this.post = post;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public Binary getImage() {
+        return image;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setImage(Binary image) {
+        this.image = image;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public int getOrder() {
+        return order;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setOrder(int order) {
+        this.order = order;
     }
-
-
-
 }
