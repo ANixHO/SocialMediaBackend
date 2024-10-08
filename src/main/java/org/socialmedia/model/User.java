@@ -15,7 +15,6 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "user_id")
     private Long userId;
 
     @Column(unique = true)
@@ -29,6 +28,11 @@ public class User implements UserDetails {
             inverseJoinColumns = {@JoinColumn(name = "role_id")}
     )
     private Set<Role> authorities;
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Post> posts;
+
+
 
     public User(){
         super();

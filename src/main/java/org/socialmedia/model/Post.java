@@ -1,8 +1,10 @@
 package org.socialmedia.model;
 
 import jakarta.persistence.*;
+import org.socialmedia.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "posts", indexes = {
@@ -12,22 +14,39 @@ import java.time.LocalDateTime;
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private Long id;
 
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(
+            columnDefinition = "TEXT",
+            nullable = false
+    )
     private String contentText;
-
-    @Column(nullable = false)
-    private boolean likePost;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.REMOVE
+    )
+    private List<Comment> comments;
+
+
+    @OneToMany(
+            mappedBy = "post",
+            cascade = {CascadeType.REMOVE, CascadeType.PERSIST}
+    )
+    private List<Image> images;
 
     public Long getId() {
         return id;
@@ -70,12 +89,19 @@ public class Post {
         this.updatedAt = updatedAt;
     }
 
-    public boolean isLikePost() {
-        return likePost;
+    public List<Comment> getComments() {
+        return comments;
     }
 
-    public void setLikePost(boolean likePost) {
-        this.likePost = likePost;
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
