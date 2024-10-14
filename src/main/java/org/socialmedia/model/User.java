@@ -1,9 +1,12 @@
 package org.socialmedia.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +22,8 @@ public class User implements UserDetails {
 
     @Column(unique = true)
     private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -29,10 +34,18 @@ public class User implements UserDetails {
     )
     private Set<Role> authorities;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     private List<Post> posts;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Comment> comments;
 
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE})
+    @JoinColumn(name = "avatar_id")
+    private Avatar avatar;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     public User(){
         super();
@@ -92,5 +105,38 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setAuthorities(Set<Role> authorities) {
+        this.authorities = authorities;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
