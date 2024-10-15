@@ -3,30 +3,38 @@ package org.socialmedia.service.impl;
 import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.Exceptions.PostNotFoundException;
 import org.socialmedia.model.Post;
+import org.socialmedia.model.PostImage;
 import org.socialmedia.repository.PostRepository;
 import org.socialmedia.service.CommentService;
-import org.socialmedia.service.ImageService;
+import org.socialmedia.service.PostImageService;
 import org.socialmedia.service.PostService;
+import org.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements PostService {
+
+    private static final int POST_PAGE_SIZE = 15;
 
     @Autowired
     private CommentService commentService;
     @Autowired
     private PostRepository postRepository;
     @Autowired
-    private ImageService imageService;
+    private PostImageService postImageService;
 
+    @Autowired
+    private UserService userService;
 
     @Transactional
     public Post createPost(Post post, List<MultipartFile> imageFiles) throws IOException {
@@ -38,19 +46,18 @@ public class PostServiceImpl implements PostService {
         }
 
 
-        post.setCreatedAt(LocalDateTime.now());
-        post.setLikePost(false);
+        post.setUser(userService.getCurrUser());
         Post savedPost = postRepository.save(post);
-        Long savedPostId = savedPost.getId();
 
-        imageService.saveImage(savedPostId, imageFiles);
+        postImageService.saveMultiplePostImages(savedPost, imageFiles, 0);
 
         return savedPost;
     }
 
     @Transactional
-    public Post updatePost(Long id, Post post, List<MultipartFile> imageFiles) {
-        Post existingPost = getPostById(id);
+    public Post updatePost(Post post, List<MultipartFile> imageFiles) throws IOException {
+        userService.isOwner(post.getUser());
+        Post existingPost = getPostById(post.getId());
 
         if (post.getTitle() != null) {
             existingPost.setTitle(post.getTitle());
@@ -61,31 +68,13 @@ public class PostServiceImpl implements PostService {
         }
 
         existingPost.setUpdatedAt(LocalDateTime.now());
+
         if (!imageFiles.isEmpty()) {
-            imageService.saveImage(id, imageFiles);
+            List<PostImage> list = postImageService.getPostImages(existingPost);
+            int lastOrder = postImageService.getLastPostImage(post).getOrders();
+            postImageService.saveMultiplePostImages(existingPost, imageFiles, lastOrder);
         }
-
         return postRepository.save(existingPost);
-    }
-
-    public PostResponse getPostResponseByPostId(Long id) {
-        PostResponse postResponse = new PostResponse(getPostById(id));
-        postResponse.setRecentComments(commentService.getRecentCommentByPostId(id, 5));
-        postResponse.setImageIdList(imageService.getImageUrlsByPostId(id));
-
-        return postResponse;
-    }
-
-
-    public List<PostResponse> getAllPostResponses() {
-        List<Post> postList = postRepository.findAll();
-        List<PostResponse> postResponses = new ArrayList<>();
-
-        for (Post post : postList) {
-            postResponses.add(getPostResponseByPostId(post.getId()));
-        }
-
-        return postResponses;
     }
 
     public Post getPostById(Long id) {
@@ -93,23 +82,23 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new PostNotFoundException("Post not found with id: " + id));
     }
 
-
     @Transactional
-    public void deletePost(Long id) {
-        imageService.deleteImageByPostId(id);
-        postRepository.deleteById(id);
+    public void deletePost(Post post) {
+        userService.isOwner(post.getUser());
+        postRepository.deleteById(post.getId());
     }
 
-    public boolean likeFunction(Long postId) {
-        Post post = getPostById(postId);
-        if (post.isLikePost()) {
-            post.setLikePost(false);
-        } else {
-            post.setLikePost(true);
-        }
-        postRepository.save(post);
+    public List<Post> getPostsForExplore(int page) {
+        PostResponse postResponse = new PostResponse();
+        PageRequest pageRequest = PageRequest.of(page, POST_PAGE_SIZE, Sort.by("update_at").descending());
+        return postRepository.findAll(pageRequest).getContent();
 
-        return post.isLikePost();
+    }
+
+
+    public Post getSinglePost(Post post){
+        Optional<Post> opPost = postRepository.findById(post.getId());
+        return opPost.orElseThrow(() -> new PostNotFoundException("Post Not Found"));
     }
 
 

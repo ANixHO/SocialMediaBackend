@@ -1,7 +1,8 @@
 package org.socialmedia.model;
 
 import jakarta.persistence.*;
-import org.socialmedia.model.User;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,26 +28,30 @@ public class Post {
     private String contentText;
 
     @Column(nullable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(
             mappedBy = "post",
-            cascade = CascadeType.REMOVE
+            cascade = CascadeType.REMOVE,
+            fetch = FetchType.LAZY
     )
     private List<Comment> comments;
 
 
     @OneToMany(
             mappedBy = "post",
-            cascade = {CascadeType.REMOVE, CascadeType.PERSIST}
+            cascade = {CascadeType.REMOVE, CascadeType.PERSIST},
+            fetch = FetchType.LAZY
     )
-    private List<Image> images;
+    private List<PostImage> postImages;
 
     public Long getId() {
         return id;
@@ -103,5 +108,13 @@ public class Post {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public List<PostImage> getPostImages() {
+        return postImages;
+    }
+
+    public void setPostImages(List<PostImage> postImages) {
+        this.postImages = postImages;
     }
 }
