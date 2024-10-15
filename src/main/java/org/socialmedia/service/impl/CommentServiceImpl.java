@@ -1,11 +1,18 @@
 package org.socialmedia.service.impl;
 
-import org.socialmedia.Exceptions.CommentNotFoundException;
+import org.socialmedia.Exceptions.CommentException;
 import org.socialmedia.Exceptions.InvalidInputException;
+import org.socialmedia.Exceptions.UserException;
 import org.socialmedia.model.Comment;
+import org.socialmedia.model.Post;
+import org.socialmedia.model.User;
 import org.socialmedia.repository.CommentRepository;
 import org.socialmedia.service.CommentService;
+import org.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,29 +20,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class CommentServiceImpl implements CommentService {
+
+    private static final int COMMENT_PAGE_SIZE = 15;
+
     @Autowired
     private CommentRepository commentRepository;
 
+    @Autowired
+    private UserService userService;
 
-/*
-    add comment
- */
+    /*
+        add comment
+     */
     @Transactional
-    public Comment addComment(Long postId, Comment comment) {
+    public Comment addComment(Post post, Comment comment, User user) {
         if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
             throw new InvalidInputException("Comment content can not be empty");
         }
 
-        comment.setPostId(postId);
-        comment.setCreatedAt(LocalDateTime.now());
+        comment.setPost(post);
+        comment.setUser(user);
 
-        return commentRepository.save(comment);
-    }
-
-    @Transactional
-    public Comment addCommentWithParentComment(Long postId, Long parentCommentId, Comment comment) {
-        comment.setParentCommentId(parentCommentId);
         return commentRepository.save(comment);
     }
 
@@ -43,17 +50,15 @@ public class CommentServiceImpl implements CommentService {
     get comment
 */
 
-    public Comment getCommentById(Long id) {
+    public Comment getComment(Long id) {
         return commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
+                .orElseThrow(() -> new CommentException("Comment not found"));
     }
 
-    public List<Comment> getCommentByPostId(Long postId) {
-        return commentRepository.findByPostId(postId);
-    }
-
-    public List<Comment> getRecentCommentByPostId(Long postId, int limit) {
-        return commentRepository.findByPostId(postId);
+    public List<Comment> getCommentByPost(Post post, int page) {
+        PageRequest pageRequest = PageRequest.of(page, COMMENT_PAGE_SIZE, Sort.by("updated_at").descending());
+        Page<Comment> commentPage = commentRepository.findByPostId(post.getId(), pageRequest);
+        return commentPage.getContent();
     }
 
 /*
@@ -61,32 +66,34 @@ public class CommentServiceImpl implements CommentService {
  */
 
     @Transactional
-    public Comment updateComment(Long id, Comment comment) {
-        if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
-            throw new InvalidInputException("Comment content can not be empty");
+    public Comment updateComment(Comment comment) {
+        Comment oldComment = getComment(comment.getId());
+
+        if (userService.isOwner(comment.getUser())) {
+            throw new UserException("Invalid User");
         }
 
-        comment.setUpdatedAt(LocalDateTime.now());
-        return commentRepository.save(comment);
+        if (comment.getId() != oldComment.getId()) {
+            throw new CommentException("Invalid comment update request");
+        }
+        if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+            throw new CommentException("Comment content can not be empty");
+        }
+
+        oldComment.setContent(comment.getContent());
+        oldComment.setUpdatedAt(LocalDateTime.now());
+        return commentRepository.save(oldComment);
     }
 
-/*
-    delete comment
- */
+    /*
+        delete comment
+     */
     @Transactional
     public void deleteComment(Long id) {
-        Comment comment = getCommentById(id);
-        List<Comment> commentList = commentRepository.findByParentCommentId(id);
-        if(!commentList.isEmpty()) {
-            comment.setContent(null);
-            comment.setUpdatedAt(LocalDateTime.now());
-            commentRepository.save(comment);
-        }else {
-            commentRepository.delete(comment);
-        }
+        userService.isOwner(getComment(id).getUser());
+        commentRepository.deleteById(id);
+
     }
-
-
 
 
 }

@@ -1,21 +1,19 @@
 package org.socialmedia.service;
 
 import org.socialmedia.model.Comment;
+import org.socialmedia.model.Post;
+import org.socialmedia.model.User;
 
 import java.util.List;
 
 public interface CommentService {
-    Comment addComment(Long postId, Comment comment);
+    Comment addComment(Post post, Comment comment, User user);
 
-    Comment addCommentWithParentComment(Long postId, Long parentCommentId, Comment comment);
+    Comment getComment(Long id);
 
-    Comment getCommentById(Long id);
+    List<Comment> getCommentByPost(Post post);
 
-    List<Comment> getRecentCommentByPostId(Long postId, int limit);
-
-    List<Comment> getCommentByPostId(Long postId);
-
-    Comment updateComment(Long id, Comment comment);
+    Comment updateComment(Comment comment);
 
     void deleteComment(Long id);
 }
