@@ -26,6 +26,7 @@ public class User implements UserDetails {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role_junction",
@@ -34,20 +35,25 @@ public class User implements UserDetails {
     )
     private Set<Role> authorities;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Post> posts;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Comment> comments;
 
-    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToOne(
+            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            fetch = FetchType.LAZY
+            )
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public User(){
+    public User() {
         super();
         this.authorities = new HashSet<Role>();
     }
