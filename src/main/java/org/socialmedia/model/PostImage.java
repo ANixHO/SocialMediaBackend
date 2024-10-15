@@ -1,14 +1,16 @@
 package org.socialmedia.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.bson.types.Binary;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Document(collection = "images")
-public class Image {
+public class PostImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +23,14 @@ public class Image {
 
     private Binary image;
 
-    private int order;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
-    public Image() {
+    private int orders;
+
+
+    public PostImage() {
 
     }
 
@@ -52,11 +59,20 @@ public class Image {
         this.image = image;
     }
 
-    public int getOrder() {
-        return order;
+    public int getOrders() {
+        return orders;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setOrders(int order) {
+        this.orders = order;
     }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
 }
