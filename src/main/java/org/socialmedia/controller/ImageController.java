@@ -1,37 +1,51 @@
 package org.socialmedia.controller;
 
-import org.socialmedia.service.ImageService;
+import org.socialmedia.model.Post;
+import org.socialmedia.model.PostImage;
+import org.socialmedia.service.PostImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/images")
+@RequestMapping("/api/postImages")
 public class ImageController {
 
     @Autowired
-    private ImageService imageService;
+    private PostImageService postImageService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<byte[]> getImageById(@PathVariable Long id){
+    @GetMapping("/explore/{postId}")
+    public ResponseEntity<PostImage> getInitPostImage(@PathVariable Long postId){
         try {
-            byte[] imageData = imageService.getImageDataById(id);
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageData);
+            Post post = new Post(postId);
+            PostImage initPostImage = postImageService.getInitPostImage(post);
+            return ResponseEntity.ok(initPostImage);
+
         }catch (RuntimeException e){
             return ResponseEntity.notFound().build();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteImageById(@PathVariable Long  id){
+    @GetMapping("/postDetail/{postId}")
+    public ResponseEntity<List<PostImage>> getPostImages(@PathVariable Long postId){
         try {
-            imageService.deleteImageById(id);
+            Post post = new Post(postId);
+            List<PostImage> postImageList = postImageService.getPostImages(post);
+            return ResponseEntity.ok(postImageList);
+        } catch (RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{postImageId}")
+    public ResponseEntity<Void> deletePostImage(@PathVariable Long postImageId){
+        try {
+            PostImage postImage = new PostImage(postImageId);
+            postImageService.deletePostImage(postImage);
             return ResponseEntity.ok().build();
         }catch (RuntimeException e){
             return ResponseEntity.notFound().build();
