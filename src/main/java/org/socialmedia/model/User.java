@@ -58,6 +58,11 @@ public class User implements UserDetails {
         this.authorities = new HashSet<Role>();
     }
 
+    public User(Long userId){
+        super();
+        this.userId = userId;
+    }
+
     public User(String username, String password, Set<Role> authorities) {
         super();
 //        this.userId = userId;
