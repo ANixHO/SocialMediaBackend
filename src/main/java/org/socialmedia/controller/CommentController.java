@@ -1,6 +1,7 @@
 package org.socialmedia.controller;
 
 import org.socialmedia.model.Comment;
+import org.socialmedia.model.Post;
 import org.socialmedia.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,25 +19,22 @@ public class CommentController {
 /*
     add comment
  */
-    @PostMapping("/post/{postId}")
+    @PostMapping("/{postId}")
     public ResponseEntity<Comment> addComment(@PathVariable Long postId,
-                                              @RequestBody Comment comment) {
-        return ResponseEntity.ok(commentService.addComment(postId, comment));
-    }
-
-    @PostMapping("/post/{postId}/{parentCommentId}")
-    public ResponseEntity<Comment> addCommentWithParentComment(@PathVariable Long postId,
-                                                               @PathVariable Long parentCommentId,
-                                                               @RequestBody Comment comment) {
-        return ResponseEntity.ok(commentService.addCommentWithParentComment(postId, parentCommentId, comment));
+                                              @RequestPart("comment") Comment comment
+                                              ) {
+        Post post = new Post(postId);
+        return ResponseEntity.ok(commentService.addComment(post, comment));
     }
 
 /*
     get comment
  */
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getCommentByPostId(postId));
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId,
+                                                             int page) {
+        return ResponseEntity.ok(commentService.getCommentByPost(new Post(postId), page));
     }
 
 /*
@@ -45,15 +43,16 @@ public class CommentController {
     @PutMapping("/{id}")
     public ResponseEntity<Comment> updateComment(@PathVariable Long id,
                                                  @RequestBody Comment comment) {
-        return ResponseEntity.ok(commentService.updateComment(id, comment));
+        comment.setId(id);
+        return ResponseEntity.ok(commentService.updateComment(comment));
     }
 
 /*
     delete comment
  */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Comment> deleteComment(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
         commentService.deleteComment(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

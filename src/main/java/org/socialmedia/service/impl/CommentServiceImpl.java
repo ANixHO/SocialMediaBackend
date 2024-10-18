@@ -35,13 +35,13 @@ public class CommentServiceImpl implements CommentService {
         add comment
      */
     @Transactional
-    public Comment addComment(Post post, Comment comment, User user) {
+    public Comment addComment(Post post, Comment comment) {
         if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
             throw new InvalidInputException("Comment content can not be empty");
         }
 
         comment.setPost(post);
-        comment.setUser(user);
+        comment.setUser(userService.getCurrUser());
 
         return commentRepository.save(comment);
     }
