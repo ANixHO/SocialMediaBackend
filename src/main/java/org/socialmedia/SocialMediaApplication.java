@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,7 @@ import java.util.Set;
 @SpringBootApplication
 @EntityScan("org.socialmedia.model")
 @EnableJpaRepositories(basePackages = "org.socialmedia.repository")
+@EnableTransactionManagement
 public class SocialMediaApplication {
 
     public static void main(String[] args) {
