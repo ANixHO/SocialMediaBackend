@@ -53,6 +53,13 @@ public class Post {
     )
     private List<PostImage> postImages;
 
+    public Post() {
+    }
+
+    public Post(Long id){
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }

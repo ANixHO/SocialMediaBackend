@@ -24,46 +24,37 @@ public class PostController {
 
     @PostMapping(value = "/newpost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Post> createPost(
-            @RequestPart("post") String postJson,
+            @RequestPart("post") Post post,
             @RequestPart("images") List<MultipartFile> images) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        Post post = mapper.readValue(postJson, Post.class);
+
         return ResponseEntity.ok(postService.createPost(post, images));
     }
 
-    @GetMapping("/explore")
-    public ResponseEntity<List<PostResponse>> getAllPostResponses() {
-        return ResponseEntity.ok(postService.getAllPostResponses());
+    @GetMapping("/explore/{page}")
+    public ResponseEntity<List<Post>> postsForExplorePage(@PathVariable int page) {
+        return ResponseEntity.ok(postService.getPostsForExplore(page));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> getPostResponseById(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.getPostResponseByPostId(id));
+    @GetMapping("/{postId}")
+    public ResponseEntity<Post> getSinglePost(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getSinglePost(new Post(postId)));
     }
 
-    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Post> updatePost(@PathVariable Long id,
-                                           @RequestPart("post") String postJson,
-                                           @RequestPart(value = "images", required = false) Optional<List<MultipartFile>> images) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        Post post = mapper.readValue(postJson, Post.class);
-
-        List<MultipartFile> imageFiles = images.orElse(Collections.emptyList());
-
-        return ResponseEntity.ok(postService.updatePost(id, post, imageFiles));
+    @PostMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Post> updatePost(@PathVariable Long postId,
+                                           @RequestPart("post") Post post,
+                                           @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        post.setId(postId);
+        return ResponseEntity.ok(postService.updatePost(post, images));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
 
-        postService.deletePost(id);
+        postService.deletePost(new Post(postId));
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/like")
-    public ResponseEntity<Boolean> likePost(@PathVariable Long postId){
-        return ResponseEntity.ok(postService.likeFunction(postId));
-    }
 
 
 }

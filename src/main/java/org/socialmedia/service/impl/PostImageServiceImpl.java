@@ -35,10 +35,12 @@ public class PostImageServiceImpl implements PostImageService {
         return postImageRepository.findByPost(post);
     }
 
+    @Override
     public PostImage getInitPostImage(Post post){
         return postImageRepository.findFirstByPostOrderByOrdersAsc(post);
     }
 
+    @Override
     public PostImage getLastPostImage(Post post){
         return postImageRepository.findFirstByPostOrderByOrdersDesc(post);
     }
@@ -50,10 +52,8 @@ public class PostImageServiceImpl implements PostImageService {
         postImageRepository.deleteById(postImage.getId());
     }
 
-    /*
-        parameter int order, is for ordering image for belonging poster
-     */
     @Transactional
+    @Override
     public void saveMultiplePostImages(Post post, List<MultipartFile> imageFiles, int lastOrder) throws IOException {
 
         for (int order = 0 ; order < imageFiles.size() ; order ++){

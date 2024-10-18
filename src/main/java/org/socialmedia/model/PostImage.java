@@ -34,6 +34,10 @@ public class PostImage {
 
     }
 
+    public PostImage(Long id){
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }
