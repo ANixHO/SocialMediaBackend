@@ -1,19 +1,20 @@
 package org.socialmedia.service;
 
+import org.socialmedia.dto.CommentDTO;
 import org.socialmedia.model.Comment;
-import org.socialmedia.model.Post;
-import org.socialmedia.model.User;
 
 import java.util.List;
 
 public interface CommentService {
-    Comment addComment(Post post, Comment comment);
+    CommentDTO addComment(String postId, String content);
 
     Comment getComment(String id);
 
-    List<Comment> getCommentByPost(Post post, int page);
+    CommentDTO getCommentDTO(String commentId);
 
-    Comment updateComment(Comment comment);
+    List<CommentDTO> getCommentDTOByPostId(String postId, int page);
 
-    void deleteComment(String id);
+    CommentDTO updateComment(CommentDTO commentDTO);
+
+    void deleteComment(String commentId);
 }

@@ -33,19 +33,21 @@ public class PostController {
     }
 
     @GetMapping("/explore/{page}")
-    public ResponseEntity<List<Post>> postsForExplorePage(@PathVariable int page) {
+    public ResponseEntity<List<PostDTO>> postsForExplorePage(@PathVariable int page) {
         return ResponseEntity.ok(postService.getPostsForExplore(page));
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<Post> getSinglePost(@PathVariable String postId) {
-        return ResponseEntity.ok(postService.getSinglePost(new Post(postId)));
+    public ResponseEntity<PostDTO> getSinglePost(@PathVariable String postId) {
+        return ResponseEntity.ok(postService.getSinglePost(postId));
     }
 
     @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostDTO> updatePost(@PathVariable String postId,
-                                           @RequestPart("post") PostDTO postDTO,
+                                           @RequestPart("post") String postJson,
                                            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        PostDTO postDTO = mapper.readValue(postJson, PostDTO.class);
         return ResponseEntity.ok(postService.updatePost(postDTO, images));
     }
 

@@ -49,7 +49,7 @@ public class PostServiceImpl implements PostService {
         post.setUser(userService.getCurrUser());
         Post savedPost = postRepository.save(post);
 
-        postImageService.saveMultiplePostImages(savedPost, imageFiles, 0);
+        postImageService.saveMultiplePostImages(savedPost.getId(), imageFiles, 0);
 
         return convertToDTO(savedPost);
     }

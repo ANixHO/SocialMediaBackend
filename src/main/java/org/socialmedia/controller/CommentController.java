@@ -1,5 +1,6 @@
 package org.socialmedia.controller;
 
+import org.socialmedia.dto.CommentDTO;
 import org.socialmedia.model.Comment;
 import org.socialmedia.model.Post;
 import org.socialmedia.service.CommentService;
@@ -20,11 +21,10 @@ public class CommentController {
     add comment
  */
     @PostMapping("/{postId}")
-    public ResponseEntity<Comment> addComment(@PathVariable String postId,
-                                              @RequestPart("comment") Comment comment
+    public ResponseEntity<CommentDTO> addComment(@PathVariable String postId,
+                                                 @RequestPart("comment") String content
                                               ) {
-        Post post = new Post(postId);
-        return ResponseEntity.ok(commentService.addComment(post, comment));
+        return ResponseEntity.ok(commentService.addComment(postId, content));
     }
 
 /*
@@ -32,19 +32,17 @@ public class CommentController {
  */
 
     @GetMapping("/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable String postId,
+    public ResponseEntity<List<CommentDTO>> getCommentsByPostId(@PathVariable String postId,
                                                              int page) {
-        return ResponseEntity.ok(commentService.getCommentByPost(new Post(postId), page));
+        return ResponseEntity.ok(commentService.getCommentDTOByPostId(postId, page));
     }
 
 /*
     update comment
  */
     @PutMapping("/{commentId}")
-    public ResponseEntity<Comment> updateComment(@PathVariable String commentId,
-                                                 @RequestBody Comment comment) {
-        comment.setId(commentId);
-        return ResponseEntity.ok(commentService.updateComment(comment));
+    public ResponseEntity<CommentDTO> updateComment(@RequestBody CommentDTO commentDTO) {
+        return ResponseEntity.ok(commentService.updateComment(commentDTO));
     }
 
 /*

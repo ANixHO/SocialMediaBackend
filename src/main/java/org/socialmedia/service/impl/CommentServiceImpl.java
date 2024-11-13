@@ -3,10 +3,13 @@ package org.socialmedia.service.impl;
 import org.socialmedia.Exceptions.CommentException;
 import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.Exceptions.UserException;
+import org.socialmedia.dto.CommentDTO;
 import org.socialmedia.model.Comment;
 import org.socialmedia.model.Post;
+import org.socialmedia.model.User;
 import org.socialmedia.repository.mysql.CommentRepository;
 import org.socialmedia.service.CommentService;
+import org.socialmedia.service.PostService;
 import org.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,35 +34,46 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private PostService postService;
 
     /*
         add comment
      */
     @Transactional
-    public Comment addComment(Post post, Comment comment) {
-        if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
-            throw new InvalidInputException("Comment content can not be empty");
-        }
-
-        comment.setPost(post);
+    public CommentDTO addComment(String postId, String content) {
+        Comment comment = new Comment();
+        comment.setPost(postService.getPostById(postId));
         comment.setUser(userService.getCurrUser());
+        comment.setContent(validComment(content));
+        comment = commentRepository.save(comment);
 
-        return commentRepository.save(comment);
+        return convertToDTO(comment);
     }
 
 /*
     get comment
 */
 
-    public Comment getComment(String id) {
-        return commentRepository.findById(id)
+    public Comment getComment(String commentId) {
+        return commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentException("Comment not found"));
     }
 
-    public List<Comment> getCommentByPost(Post post, int page) {
+    public CommentDTO getCommentDTO(String commentId) {
+        return convertToDTO(getComment(commentId));
+    }
+
+    public List<CommentDTO> getCommentDTOByPostId(String postId, int page) {
         PageRequest pageRequest = PageRequest.of(page, COMMENT_PAGE_SIZE, Sort.by("updated_at").descending());
-        Page<Comment> commentPage = commentRepository.findByPostId(post.getId(), pageRequest);
-        return commentPage.getContent();
+        Page<Comment> commentPage = commentRepository.findByPostId(postId, pageRequest);
+        List<Comment> list = commentPage.getContent();
+        List<CommentDTO> commentDTOS = new ArrayList<>();
+        for (Comment comment : list) {
+            commentDTOS.add(convertToDTO(comment));
+        }
+
+        return commentDTOS;
     }
 
 /*
@@ -66,33 +81,42 @@ public class CommentServiceImpl implements CommentService {
  */
 
     @Transactional
-    public Comment updateComment(Comment comment) {
-        Comment oldComment = getComment(comment.getId());
+    public CommentDTO updateComment(CommentDTO commentDTO) {
+        Comment oldComment = getComment(commentDTO.getId());
 
-        if (userService.isOwner(comment.getUser())) {
-            throw new UserException("Invalid User");
-        }
+        userService.isOwner(oldComment.getUser().getId());
 
-        if (!comment.getId().equals(oldComment.getId())) {
-            throw new CommentException("Invalid comment update request");
-        }
-        if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
-            throw new CommentException("Comment content can not be empty");
-        }
-
-        oldComment.setContent(comment.getContent());
-        oldComment.setUpdatedAt(LocalDateTime.now());
-        return commentRepository.save(oldComment);
+        oldComment.setContent(validComment(commentDTO.getContent()));
+        oldComment = commentRepository.save(oldComment);
+        return convertToDTO(oldComment);
     }
 
     /*
         delete comment
      */
     @Transactional
-    public void deleteComment(String id) {
-        userService.isOwner(getComment(id).getUser());
-        commentRepository.deleteById(id);
+    public void deleteComment(String commentId) {
+        userService.isOwner(getComment(commentId).getUser().getId());
+        commentRepository.deleteById(commentId);
 
+    }
+
+    private String validComment(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new InvalidInputException("Comment content can not be empty");
+        }
+        return content;
+    }
+
+    private CommentDTO convertToDTO(Comment comment) {
+        CommentDTO dto = new CommentDTO();
+        dto.setId(comment.getId());
+        dto.setPostId(comment.getPost().getId());
+        dto.setContent(comment.getContent());
+        dto.setDateTime(comment.getUpdatedAt());
+        dto.setUserId(comment.getUser().getId());
+
+        return dto;
     }
 
 
