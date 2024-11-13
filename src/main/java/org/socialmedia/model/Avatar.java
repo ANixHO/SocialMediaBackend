@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.bson.types.Binary;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
@@ -12,25 +13,27 @@ import java.time.LocalDateTime;
 public class Avatar {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private Binary avatar;
 
     @CreationTimestamp
     private LocalDateTime created;
 
-    @OneToOne(mappedBy = "user_id")
+    @Transient
     private User user;
+
+    @Field("user_id")
+    private String userId;
 
     public Avatar() {
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -56,5 +59,14 @@ public class Avatar {
 
     public void setUser(User user) {
         this.user = user;
+        this.userId = user != null ? user.getId(): null;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

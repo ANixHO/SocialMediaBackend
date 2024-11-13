@@ -1,6 +1,7 @@
 package org.socialmedia.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.socialmedia.dto.PostDTO;
 import org.socialmedia.model.Post;
 import org.socialmedia.service.impl.PostResponse;
 import org.socialmedia.service.impl.PostServiceImpl;
@@ -23,10 +24,11 @@ public class PostController {
     private PostServiceImpl postService;
 
     @PostMapping(value = "/newpost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Post> createPost(
-            @RequestPart("post") Post post,
+    public ResponseEntity<PostDTO> createPost(
+            @RequestPart("post") String postJson,
             @RequestPart("images") List<MultipartFile> images) throws IOException {
-
+        ObjectMapper mapper = new ObjectMapper();
+        Post post = mapper.readValue(postJson, Post.class);
         return ResponseEntity.ok(postService.createPost(post, images));
     }
 
@@ -36,22 +38,28 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<Post> getSinglePost(@PathVariable Long postId) {
+    public ResponseEntity<Post> getSinglePost(@PathVariable String postId) {
         return ResponseEntity.ok(postService.getSinglePost(new Post(postId)));
     }
 
-    @PostMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Post> updatePost(@PathVariable Long postId,
-                                           @RequestPart("post") Post post,
+    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostDTO> updatePost(@PathVariable String postId,
+                                           @RequestPart("post") PostDTO postDTO,
                                            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
-        post.setId(postId);
-        return ResponseEntity.ok(postService.updatePost(post, images));
+        return ResponseEntity.ok(postService.updatePost(postDTO, images));
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+    public ResponseEntity<Void> deletePost(@PathVariable String postId) {
 
-        postService.deletePost(new Post(postId));
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{postId}/postImages")
+    public ResponseEntity<Void> deletePostImages(@PathVariable String postId,
+                                                 @RequestBody List<String> postImageIdList){
+        postService.deletePostImage(postId, postImageIdList);
         return ResponseEntity.noContent().build();
     }
 

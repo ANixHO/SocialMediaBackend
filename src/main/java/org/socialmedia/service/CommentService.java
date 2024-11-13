@@ -9,11 +9,11 @@ import java.util.List;
 public interface CommentService {
     Comment addComment(Post post, Comment comment);
 
-    Comment getComment(Long id);
+    Comment getComment(String id);
 
     List<Comment> getCommentByPost(Post post, int page);
 
     Comment updateComment(Comment comment);
 
-    void deleteComment(Long id);
+    void deleteComment(String id);
 }

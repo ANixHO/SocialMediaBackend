@@ -20,7 +20,7 @@ public class CommentController {
     add comment
  */
     @PostMapping("/{postId}")
-    public ResponseEntity<Comment> addComment(@PathVariable Long postId,
+    public ResponseEntity<Comment> addComment(@PathVariable String postId,
                                               @RequestPart("comment") Comment comment
                                               ) {
         Post post = new Post(postId);
@@ -32,7 +32,7 @@ public class CommentController {
  */
 
     @GetMapping("/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId,
+    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable String postId,
                                                              int page) {
         return ResponseEntity.ok(commentService.getCommentByPost(new Post(postId), page));
     }
@@ -40,19 +40,19 @@ public class CommentController {
 /*
     update comment
  */
-    @PutMapping("/{id}")
-    public ResponseEntity<Comment> updateComment(@PathVariable Long id,
+    @PutMapping("/{commentId}")
+    public ResponseEntity<Comment> updateComment(@PathVariable String commentId,
                                                  @RequestBody Comment comment) {
-        comment.setId(id);
+        comment.setId(commentId);
         return ResponseEntity.ok(commentService.updateComment(comment));
     }
 
 /*
     delete comment
  */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
-        commentService.deleteComment(id);
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable String commentId) {
+        commentService.deleteComment(commentId);
         return ResponseEntity.ok().build();
     }
 }

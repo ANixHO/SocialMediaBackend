@@ -8,18 +8,18 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostImageService {
-    Optional<PostImage> getPostImage(Long imageId);
+    Optional<PostImage> getPostImage(String imageId);
 
-    List<PostImage> getPostImages(Post post);
+    List<PostImage> getPostImages(String postId);
 
-    void deletePostImage(PostImage postImage);
+    void deletePostImage(String postImageId);
 
-    void savePostImage(Post post, MultipartFile imageFile, int order) throws IOException;
+    void savePostImage(String postId, MultipartFile imageFile, int order) throws IOException;
 
-    void saveMultiplePostImages(Post post, List<MultipartFile> imagefiles, int lastOrder) throws IOException;
+    void saveMultiplePostImages(String postId, List<MultipartFile> imagefiles, int lastOrder) throws IOException;
 
-    PostImage getInitPostImage(Post post);
+    PostImage getInitPostImage(String postId);
 
-    PostImage getLastPostImage(Post post);
+    PostImage getLastPostImage(String postId);
 
 }

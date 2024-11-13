@@ -1,4 +1,4 @@
-package org.socialmedia.model;
+package org.socialmedia.dto;
 
 public class RegistrationDTO {
 

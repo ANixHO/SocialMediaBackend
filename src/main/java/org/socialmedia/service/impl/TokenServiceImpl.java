@@ -1,5 +1,6 @@
 package org.socialmedia.service.impl;
 
+import org.socialmedia.model.User;
 import org.socialmedia.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -26,16 +27,19 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String generateJwt(Authentication authentication) {
         Instant now = Instant.now();
-
-        String scope = authentication.getAuthorities().stream()
+//
+        String roles = authentication.getAuthorities()
+                .stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining(","));
+
+        User user = (User) authentication.getPrincipal();
 
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
-                .subject(authentication.getName())
-                .claim("roles", scope)
+                .subject(user.getId())
+                .claim("roles", roles)
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();

@@ -17,8 +17,8 @@ import java.util.Set;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long userId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @Column(unique = true)
     private String username;
@@ -42,7 +42,7 @@ public class User implements UserDetails {
     private List<Comment> comments;
 
     @OneToOne(
-            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
             )
     @JoinColumn(name = "avatar_id")
@@ -58,9 +58,9 @@ public class User implements UserDetails {
         this.authorities = new HashSet<Role>();
     }
 
-    public User(Long userId){
+    public User(String userId){
         super();
-        this.userId = userId;
+        this.id = userId;
     }
 
     public User(String username, String password, Set<Role> authorities) {
@@ -73,7 +73,8 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+//        return List.of();
+        return authorities;
     }
 
     @Override
@@ -90,13 +91,13 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
-//    public void setUserId(Long userId) {
-//        this.userId = userId;
-//    }
+    public void setId(String id) {
+        this.id = id;
+    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -149,5 +150,13 @@ public class User implements UserDetails {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Avatar getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(Avatar avatar) {
+        this.avatar = avatar;
     }
 }

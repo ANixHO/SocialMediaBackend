@@ -4,7 +4,7 @@ import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
 import org.socialmedia.model.Avatar;
 import org.socialmedia.model.User;
-import org.socialmedia.repository.AvatarRepository;
+import org.socialmedia.repository.mongodb.AvatarRepository;
 import org.socialmedia.service.AvatarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,47 +20,44 @@ public class AvatarServiceImpl implements AvatarService {
     @Autowired
     private AvatarRepository avatarRepository;
 
-    @Autowired
-    private UserServiceImpl userService;
-
     @Override
     @Transactional
-    public void saveAvatar(MultipartFile avatarFile, User user) throws IOException {
+    public Avatar saveAvatar(MultipartFile avatarFile, String userId) throws IOException {
       Avatar avatar = new Avatar();
-      avatar.setUser(user);
+      avatar.setUserId(userId);
       avatar.setAvatar(
               new Binary(BsonBinarySubType.BINARY, avatarFile.getBytes())
       );
-      avatarRepository.save(avatar);
+      return avatarRepository.save(avatar);
 
     }
 
     @Override
-    public Avatar getAvatar(Long id) {
+    public Avatar getAvatar(String id) {
         Optional<Avatar> opAvatar = avatarRepository.findById(id);
         return opAvatar.orElse(null);
     }
 
     @Override
-    public Avatar getAvatarByUser(User user) {
-        return avatarRepository.findByUser(user);
+    public Avatar getAvatarByUserId(String userId) {
+        return avatarRepository.findByUserId(userId);
     }
 
     @Override
     @Transactional
-    public void deleteAvatar(Long id)  {
+    public void deleteAvatar(String id)  {
         avatarRepository.deleteById(id);
     }
 
     @Override
     @Transactional
-    public void deleteAvatarByUser(User user) {
-        avatarRepository.deleteByUser(user);
+    public void deleteAvatarByUserId(String userId) {
+        avatarRepository.deleteByUserId(userId);
     }
 
     @Transactional
-    public void updateAvatar(MultipartFile avatarFile, User user) throws IOException {
-        deleteAvatarByUser(user);
-        saveAvatar(avatarFile, user);
+    public Avatar updateAvatar(MultipartFile avatarFile, String userId) throws IOException {
+        deleteAvatarByUserId(userId);
+        return saveAvatar(avatarFile, userId);
     }
 }

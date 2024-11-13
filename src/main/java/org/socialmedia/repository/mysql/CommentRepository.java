@@ -1,4 +1,4 @@
-package org.socialmedia.repository;
+package org.socialmedia.repository.mysql;
 
 import org.socialmedia.model.Comment;
 import org.springframework.data.domain.Page;
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Long> {
-    Page<Comment> findByPostId(Long postId, PageRequest pageRequest);
+public interface CommentRepository extends JpaRepository<Comment,String> {
+    Page<Comment> findByPostId(String postId, PageRequest pageRequest);
     List<Comment> findByParentCommentId(Long commentId);
 
 }

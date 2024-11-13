@@ -5,8 +5,7 @@ import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.Exceptions.UserException;
 import org.socialmedia.model.Comment;
 import org.socialmedia.model.Post;
-import org.socialmedia.model.User;
-import org.socialmedia.repository.CommentRepository;
+import org.socialmedia.repository.mysql.CommentRepository;
 import org.socialmedia.service.CommentService;
 import org.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -50,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
     get comment
 */
 
-    public Comment getComment(Long id) {
+    public Comment getComment(String id) {
         return commentRepository.findById(id)
                 .orElseThrow(() -> new CommentException("Comment not found"));
     }
@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
             throw new UserException("Invalid User");
         }
 
-        if (comment.getId() != oldComment.getId()) {
+        if (!comment.getId().equals(oldComment.getId())) {
             throw new CommentException("Invalid comment update request");
         }
         if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
@@ -89,7 +89,7 @@ public class CommentServiceImpl implements CommentService {
         delete comment
      */
     @Transactional
-    public void deleteComment(Long id) {
+    public void deleteComment(String id) {
         userService.isOwner(getComment(id).getUser());
         commentRepository.deleteById(id);
 

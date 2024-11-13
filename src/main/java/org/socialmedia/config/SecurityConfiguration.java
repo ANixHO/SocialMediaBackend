@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.socialmedia.utils.RSAKeyProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
@@ -38,13 +40,27 @@ import java.util.Arrays;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     public SecurityConfiguration(RSAKeyProperties keys) {
         this.keys = keys;
     }
+
+
+
+//    @Bean
+//    public DaoAuthenticationProvider daoAuthenticationProvider() {
+//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+//        authProvider.setUserDetailsService(userDetailsService);
+//        authProvider.setPasswordEncoder(passwordEncoder());
+//        return authProvider;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -63,12 +79,19 @@ public class SecurityConfiguration {
         return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
     }
 
+    @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+//        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // Debug print
+            System.out.println("JWT Claims: " + jwt.getClaims());
+            System.out.println("Roles claim: " + jwt.getClaimAsString("roles"));
+            return jwtGrantedAuthoritiesConverter.convert(jwt);
+        });
         return jwtAuthenticationConverter;
     }
 
@@ -100,7 +123,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfig corsConfig) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .headers(
                         headers -> {
@@ -121,6 +144,7 @@ public class SecurityConfiguration {
                 .httpBasic(HttpBasicConfigurer::disable)
                 .logout(LogoutConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authenticationProvider(daoAuthenticationProvider())
                 .authorizeHttpRequests(
                         auth -> {
 
@@ -130,7 +154,7 @@ public class SecurityConfiguration {
                             auth.requestMatchers(HttpMethod.GET,"/api/images/**").permitAll();
 
                             auth.requestMatchers("/api/posts/**").hasAnyRole("ADMIN", "USER");
-                            auth.requestMatchers("/api/posts/newpost").hasRole("USER");
+                            auth.requestMatchers("/api/posts/newpost").hasAnyRole("USER", "ADMIN");
 
                             auth.requestMatchers("/api/comments/**").hasAnyRole("ADMIN", "USER");
                             auth.requestMatchers(HttpMethod.DELETE,"/api/images/**").hasAnyRole("ADMIN", "USER");

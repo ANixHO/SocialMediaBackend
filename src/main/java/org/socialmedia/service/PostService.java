@@ -1,5 +1,6 @@
 package org.socialmedia.service;
 
+import org.socialmedia.dto.PostDTO;
 import org.socialmedia.model.Post;
 import org.socialmedia.model.User;
 import org.socialmedia.service.impl.PostResponse;
@@ -9,10 +10,12 @@ import java.io.IOException;
 import java.util.List;
 
 public interface PostService {
-    Post createPost(Post post, List<MultipartFile> imageFiles) throws IOException;
-    Post updatePost(Post post, List<MultipartFile> imageFiles) throws IOException;
-    Post getPostById(Long id);
-    Post getSinglePost(Post post);
-    List<Post> getPostsForExplore(int page);
-    void deletePost(Post post);
+    PostDTO createPost(Post post, List<MultipartFile> imageFiles) throws IOException;
+    PostDTO updatePost(PostDTO post, List<MultipartFile> imageFiles) throws IOException;
+    Post getPostById(String id);
+    PostDTO getPostDTOById(String id);
+    PostDTO getSinglePost(String id);
+    List<PostDTO> getPostsForExplore(int page);
+    void deletePost(String postId);
+    void deletePostImage(String postId, List<String> postImageIdList);
 }

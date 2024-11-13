@@ -10,15 +10,15 @@ import java.util.Optional;
 
 public interface AvatarService {
 
-    void saveAvatar(MultipartFile multipartFile, User user) throws IOException;
+    Avatar saveAvatar(MultipartFile multipartFile, String userId) throws IOException;
 
-    Avatar getAvatar(Long id);
+    Avatar getAvatar(String id);
 
-    Avatar getAvatarByUser(User user);
+    Avatar getAvatarByUserId(String userId);
 
-    void deleteAvatar(Long id);
+    void deleteAvatar(String id);
 
-    void deleteAvatarByUser(User user);
+    void deleteAvatarByUserId(String userId);
 
-    void updateAvatar(MultipartFile avatarFile, User user) throws IOException;
+    Avatar updateAvatar(MultipartFile avatarFile, String userId) throws IOException;
 }

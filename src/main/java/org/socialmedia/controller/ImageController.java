@@ -19,7 +19,7 @@ public class ImageController {
     private PostImageService postImageService;
 
     @GetMapping("/explore/{postId}")
-    public ResponseEntity<PostImage> getInitPostImage(@PathVariable Long postId){
+    public ResponseEntity<PostImage> getInitPostImage(@PathVariable String postId){
         try {
             Post post = new Post(postId);
             PostImage initPostImage = postImageService.getInitPostImage(post);
@@ -31,7 +31,7 @@ public class ImageController {
     }
 
     @GetMapping("/postDetail/{postId}")
-    public ResponseEntity<List<PostImage>> getPostImages(@PathVariable Long postId){
+    public ResponseEntity<List<PostImage>> getPostImages(@PathVariable String postId){
         try {
             Post post = new Post(postId);
             List<PostImage> postImageList = postImageService.getPostImages(post);
@@ -41,15 +41,6 @@ public class ImageController {
         }
     }
 
-    @DeleteMapping("/{postImageId}")
-    public ResponseEntity<Void> deletePostImage(@PathVariable Long postImageId){
-        try {
-            PostImage postImage = new PostImage(postImageId);
-            postImageService.deletePostImage(postImage);
-            return ResponseEntity.ok().build();
-        }catch (RuntimeException e){
-            return ResponseEntity.notFound().build();
-        }
-    }
+
 
 }

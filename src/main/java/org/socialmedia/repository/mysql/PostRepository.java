@@ -1,5 +1,5 @@
 
-package org.socialmedia.repository;
+package org.socialmedia.repository.mysql;
 
 import org.socialmedia.model.Post;
 import org.springframework.data.domain.Page;
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 
 @Repository
-public interface PostRepository extends JpaRepository<Post, Long> {
-    Optional<Post> findById(Long id);
+public interface PostRepository extends JpaRepository<Post, String> {
+    Optional<Post> findById(String id);
     Page<Post> findAll(Pageable pageable);
 }

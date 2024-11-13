@@ -4,7 +4,7 @@ import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
 import org.socialmedia.model.Post;
 import org.socialmedia.model.PostImage;
-import org.socialmedia.repository.PostImageRepository;
+import org.socialmedia.repository.mongodb.PostImageRepository;
 import org.socialmedia.service.PostImageService;
 import org.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,48 +26,47 @@ public class PostImageServiceImpl implements PostImageService {
     private UserService userService;
 
     @Override
-    public Optional<PostImage> getPostImage(Long id) {
+    public Optional<PostImage> getPostImage(String id) {
         return postImageRepository.findById(id);
     }
 
     @Override
-    public List<PostImage> getPostImages(Post post) {
-        return postImageRepository.findByPost(post);
+    public List<PostImage> getPostImages(String postId) {
+        return postImageRepository.findByPost(postId);
     }
 
     @Override
-    public PostImage getInitPostImage(Post post){
-        return postImageRepository.findFirstByPostOrderByOrdersAsc(post);
+    public PostImage getInitPostImage(String postId){
+        return postImageRepository.findFirstByPostIdOrderByOrdersAsc(postId);
     }
 
     @Override
-    public PostImage getLastPostImage(Post post){
-        return postImageRepository.findFirstByPostOrderByOrdersDesc(post);
+    public PostImage getLastPostImage(String postId){
+        return postImageRepository.findFirstByPostIdOrderByOrdersDesc(postId);
     }
 
     @Override
     @Transactional
-    public void deletePostImage(PostImage postImage) {
-        userService.isOwner(postImage.getPost().getUser());
-        postImageRepository.deleteById(postImage.getId());
+    public void deletePostImage(String postImageId) {
+        postImageRepository.deleteById(postImageId);
     }
 
     @Transactional
     @Override
-    public void saveMultiplePostImages(Post post, List<MultipartFile> imageFiles, int lastOrder) throws IOException {
+    public void saveMultiplePostImages(String postId, List<MultipartFile> imageFiles, int lastOrder) throws IOException {
 
         for (int order = 0 ; order < imageFiles.size() ; order ++){
             int curOrder = lastOrder + order + 1;
-            savePostImage(post, imageFiles.get(order) , curOrder);
+            savePostImage(postId, imageFiles.get(order) , curOrder);
 
         }
     }
 
     @Override
     @Transactional
-    public void savePostImage(Post post, MultipartFile imageFile, int order) throws IOException {
+    public void savePostImage(String postId, MultipartFile imageFile, int order) throws IOException {
         PostImage postImage = new PostImage();
-        postImage.setPost(post);
+        postImage.setPostId(postId);
         postImage.setImage(
                 new Binary(BsonBinarySubType.BINARY, imageFile.getBytes())
         );

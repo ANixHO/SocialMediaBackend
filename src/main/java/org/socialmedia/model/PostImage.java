@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import org.bson.types.Binary;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
@@ -13,13 +14,14 @@ import java.time.LocalDateTime;
 public class PostImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "post_id")
+    @Transient
     private Post post;
+
+    @Field("post_id")
+    private String postId;
 
     private Binary image;
 
@@ -34,15 +36,15 @@ public class PostImage {
 
     }
 
-    public PostImage(Long id){
+    public PostImage(String id){
         this.id = id;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -53,6 +55,15 @@ public class PostImage {
 
     public void setPost(Post post) {
         this.post = post;
+        this.postId = post != null ? post.getId() : null;
+    }
+
+    public String getPostId() {
+        return postId;
+    }
+
+    public void setPostId(String postId) {
+        this.postId = postId;
     }
 
     public Binary getImage() {

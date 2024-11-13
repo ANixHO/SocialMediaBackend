@@ -6,17 +6,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "posts", indexes = {
-        @Index(name = "index_title_fulltext", columnList = "title", unique = false),
-        @Index(name = "index_content_text", columnList = "contentText", unique = false)
-})
+@Table(name = "posts")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private String id;
 
     @Column(nullable = false)
     private String title;
@@ -53,18 +51,19 @@ public class Post {
     )
     private List<PostImage> postImages;
 
+
     public Post() {
     }
 
-    public Post(Long id){
+    public Post(String id){
         this.id = id;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
