@@ -43,15 +43,6 @@ public class Post {
     )
     private List<Comment> comments;
 
-
-    @OneToMany(
-            mappedBy = "post",
-            cascade = {CascadeType.REMOVE, CascadeType.PERSIST},
-            fetch = FetchType.LAZY
-    )
-    private List<PostImage> postImages;
-
-
     public Post() {
     }
 
@@ -114,13 +105,5 @@ public class Post {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public List<PostImage> getPostImages() {
-        return postImages;
-    }
-
-    public void setPostImages(List<PostImage> postImages) {
-        this.postImages = postImages;
     }
 }

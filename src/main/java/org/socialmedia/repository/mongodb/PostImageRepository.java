@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface PostImageRepository extends MongoRepository<PostImage, String> {
-    List<PostImage> findByPost(String postId);
+    List<PostImage> findByPostId(String postId);
 
     PostImage findFirstByPostIdOrderByOrdersAsc(String postId);
     PostImage findFirstByPostIdOrderByOrdersDesc(String postId);

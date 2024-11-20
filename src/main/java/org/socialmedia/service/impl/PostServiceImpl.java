@@ -30,12 +30,9 @@ public class PostServiceImpl implements PostService {
     private static final int POST_PAGE_SIZE = 15;
 
     @Autowired
-    private CommentService commentService;
-    @Autowired
     private PostRepository postRepository;
     @Autowired
     private PostImageService postImageService;
-
     @Autowired
     private UserService userService;
     @Autowired

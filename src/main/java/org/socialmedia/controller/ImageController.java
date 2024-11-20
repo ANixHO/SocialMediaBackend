@@ -1,5 +1,6 @@
 package org.socialmedia.controller;
 
+import org.socialmedia.dto.PostImageDTO;
 import org.socialmedia.model.Post;
 import org.socialmedia.model.PostImage;
 import org.socialmedia.service.PostImageService;
@@ -19,10 +20,9 @@ public class ImageController {
     private PostImageService postImageService;
 
     @GetMapping("/explore/{postId}")
-    public ResponseEntity<PostImage> getInitPostImage(@PathVariable String postId){
+    public ResponseEntity<PostImageDTO> getInitPostImage(@PathVariable String postId){
         try {
-            Post post = new Post(postId);
-            PostImage initPostImage = postImageService.getInitPostImage(post);
+            PostImageDTO initPostImage = postImageService.getInitPostImageDTOByPostId(postId);
             return ResponseEntity.ok(initPostImage);
 
         }catch (RuntimeException e){
@@ -31,10 +31,9 @@ public class ImageController {
     }
 
     @GetMapping("/postDetail/{postId}")
-    public ResponseEntity<List<PostImage>> getPostImages(@PathVariable String postId){
+    public ResponseEntity<List<PostImageDTO>> getPostImages(@PathVariable String postId){
         try {
-            Post post = new Post(postId);
-            List<PostImage> postImageList = postImageService.getPostImages(post);
+            List<PostImageDTO> postImageList = postImageService.getPostImageDTOsByPostId(postId);
             return ResponseEntity.ok(postImageList);
         } catch (RuntimeException e){
             return ResponseEntity.notFound().build();

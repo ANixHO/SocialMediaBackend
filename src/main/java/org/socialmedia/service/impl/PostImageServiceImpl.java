@@ -2,7 +2,8 @@ package org.socialmedia.service.impl;
 
 import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
-import org.socialmedia.model.Post;
+import org.socialmedia.Exceptions.PostNotFoundException;
+import org.socialmedia.dto.PostImageDTO;
 import org.socialmedia.model.PostImage;
 import org.socialmedia.repository.mongodb.PostImageRepository;
 import org.socialmedia.service.PostImageService;
@@ -13,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PostImageServiceImpl implements PostImageService {
@@ -30,9 +30,8 @@ public class PostImageServiceImpl implements PostImageService {
         return postImageRepository.findById(id);
     }
 
-    @Override
-    public List<PostImage> getPostImages(String postId) {
-        return postImageRepository.findByPost(postId);
+    public List<PostImage> getPostImagesByPostId(String postId) {
+        return postImageRepository.findByPostId(postId);
     }
 
     @Override
@@ -72,6 +71,33 @@ public class PostImageServiceImpl implements PostImageService {
         );
         postImage.setOrders(order);
         postImageRepository.save(postImage);
+    }
+
+    public PostImageDTO getPostImageDTOById(String id){
+        PostImage postImage = getPostImage(id).orElseThrow(() -> new PostNotFoundException("Post image, id: " + id + " not found"));
+        return convertToDto(postImage);
+    }
+
+    public PostImageDTO getInitPostImageDTOByPostId(String postId){
+        return convertToDto(getInitPostImage(postId));
+    }
+
+    public List<PostImageDTO> getPostImageDTOsByPostId(String postId){
+        List<PostImage> list = getPostImagesByPostId(postId);
+        list.sort(Comparator.comparing(PostImage::getOrders));
+        List<PostImageDTO> dtos = new ArrayList<>();
+        for (PostImage postImage : list) {
+            dtos.add(convertToDto(postImage));
+        }
+        return dtos;
+
+    }
+
+    private PostImageDTO convertToDto(PostImage postImage){
+        PostImageDTO dto = new PostImageDTO();
+        dto.setId(postImage.getId());
+        dto.setImageBinary(postImage.getImage());
+        return dto;
     }
 }
 

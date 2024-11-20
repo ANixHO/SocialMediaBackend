@@ -17,6 +17,8 @@ public class PostImage {
     private String id;
 
 
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "post_id")
     @Transient
     private Post post;
 
