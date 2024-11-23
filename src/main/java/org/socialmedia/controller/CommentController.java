@@ -31,9 +31,9 @@ public class CommentController {
     get comment
  */
 
-    @GetMapping("/{postId}")
+    @GetMapping("/{postId}/{page}")
     public ResponseEntity<List<CommentDTO>> getCommentsByPostId(@PathVariable String postId,
-                                                             int page) {
+                                                             @PathVariable int page) {
         return ResponseEntity.ok(commentService.getCommentDTOByPostId(postId, page));
     }
 

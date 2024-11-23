@@ -12,8 +12,11 @@ public class PostDTO {
 
     private String userId;
 
+    private boolean hasMore;
+
 
     public PostDTO() {
+        this.hasMore = true;
     }
 
     public String getId() {
@@ -56,4 +59,11 @@ public class PostDTO {
         this.userId = userId;
     }
 
+    public boolean isHasMore() {
+        return hasMore;
+    }
+
+    public void setHasMore(boolean hasMore) {
+        this.hasMore = hasMore;
+    }
 }

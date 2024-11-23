@@ -6,11 +6,13 @@ public class CommentDTO {
     private String id;
     private String content;
     private LocalDateTime dateTime;
+    private boolean hasMore;
 
     private String userId;
     private String postId;
 
     public CommentDTO() {
+        this.hasMore = true;
     }
 
     public String getId() {
@@ -51,5 +53,13 @@ public class CommentDTO {
 
     public void setPostId(String postId) {
         this.postId = postId;
+    }
+
+    public boolean isHasMore() {
+        return hasMore;
+    }
+
+    public void setHasMore(boolean hasMore) {
+        this.hasMore = hasMore;
     }
 }

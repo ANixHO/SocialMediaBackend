@@ -13,5 +13,6 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment,String> {
     Page<Comment> findByPostId(String postId, PageRequest pageRequest);
     List<Comment> findByParentCommentId(Long commentId);
+    int countByPostId(String postId);
 
 }

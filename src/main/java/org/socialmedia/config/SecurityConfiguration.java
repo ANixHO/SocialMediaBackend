@@ -150,14 +150,15 @@ public class SecurityConfiguration {
 
                             auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                             auth.requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll();
+                            auth.requestMatchers(HttpMethod.PUT, "/api/auth/changePassword").hasAnyRole();
+
                             auth.requestMatchers("/api/posts/explore").permitAll();
-                            auth.requestMatchers(HttpMethod.GET,"/api/images/**").permitAll();
+                            auth.requestMatchers("/api/postImages/explore/**").permitAll();
+                            auth.requestMatchers("/api/user/**").permitAll();
 
                             auth.requestMatchers("/api/posts/**").hasAnyRole("ADMIN", "USER");
-                            auth.requestMatchers("/api/posts/newpost").hasAnyRole("USER", "ADMIN");
-
+                            auth.requestMatchers("/api/postImages/postDetail/**").hasAnyRole();
                             auth.requestMatchers("/api/comments/**").hasAnyRole("ADMIN", "USER");
-                            auth.requestMatchers(HttpMethod.DELETE,"/api/images/**").hasAnyRole("ADMIN", "USER");
                             auth.anyRequest().authenticated();
                         }
                 );

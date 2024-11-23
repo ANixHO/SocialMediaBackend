@@ -14,5 +14,4 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, String> {
     Optional<Post> findById(String id);
     Page<Post> findAll(Pageable pageable);
-
 }

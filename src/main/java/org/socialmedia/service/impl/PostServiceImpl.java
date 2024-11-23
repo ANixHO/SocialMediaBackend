@@ -37,7 +37,7 @@ public class PostServiceImpl implements PostService {
     private UserService userService;
     @Autowired
     private PostImageRepository postImageRepository;
-
+// TODO modify hasMore attribute of post dto
     @Transactional
     public PostDTO createPost(Post post, List<MultipartFile> imageFiles) throws IOException {
 
