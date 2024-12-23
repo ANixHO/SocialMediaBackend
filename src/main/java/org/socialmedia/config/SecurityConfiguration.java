@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletResponse;
 import org.socialmedia.utils.RSAKeyProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -48,6 +49,7 @@ public class SecurityConfiguration {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
     public SecurityConfiguration(RSAKeyProperties keys) {
         this.keys = keys;
     }
@@ -142,7 +144,9 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(HttpBasicConfigurer::disable)
-                .logout(LogoutConfigurer::disable)
+                .logout(logout -> logout.
+                        logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                .authenticationProvider(daoAuthenticationProvider())
                 .authorizeHttpRequests(
@@ -150,14 +154,15 @@ public class SecurityConfiguration {
 
                             auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                             auth.requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll();
-                            auth.requestMatchers(HttpMethod.PUT, "/api/auth/changePassword").hasAnyRole();
+                            auth.requestMatchers(HttpMethod.PUT, "/api/auth/changePassword").hasAnyRole("USER");
 
-                            auth.requestMatchers("/api/posts/explore").permitAll();
-                            auth.requestMatchers("/api/postImages/explore/**").permitAll();
+                            auth.requestMatchers(HttpMethod.GET, "/api/posts/explore/**").permitAll();
+                            auth.requestMatchers(HttpMethod.GET,"/api/postImages/explore/**").permitAll();
                             auth.requestMatchers("/api/user/**").permitAll();
+                            auth.requestMatchers("/api/auth/validateToken").hasAnyRole("USER", "ADMIN");
 
                             auth.requestMatchers("/api/posts/**").hasAnyRole("ADMIN", "USER");
-                            auth.requestMatchers("/api/postImages/postDetail/**").hasAnyRole();
+                            auth.requestMatchers("/api/postImages/postDetail/**").hasAnyRole("ADMIN","USER");
                             auth.requestMatchers("/api/comments/**").hasAnyRole("ADMIN", "USER");
                             auth.anyRequest().authenticated();
                         }

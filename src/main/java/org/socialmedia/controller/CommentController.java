@@ -1,5 +1,7 @@
 package org.socialmedia.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.socialmedia.dto.CommentDTO;
 import org.socialmedia.model.Comment;
 import org.socialmedia.model.Post;
@@ -8,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -17,14 +21,15 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
-/*
-    add comment
- */
+    /*
+        add comment
+     */
     @PostMapping("/{postId}")
     public ResponseEntity<CommentDTO> addComment(@PathVariable String postId,
-                                                 @RequestPart("comment") String content
-                                              ) {
-        return ResponseEntity.ok(commentService.addComment(postId, content));
+                                                 @RequestBody String comment) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        CommentDTO commentDTO = mapper.readValue(comment, CommentDTO.class);
+        return ResponseEntity.ok(commentService.addComment(postId, commentDTO.getContent()));
     }
 
 /*
@@ -33,21 +38,21 @@ public class CommentController {
 
     @GetMapping("/{postId}/{page}")
     public ResponseEntity<List<CommentDTO>> getCommentsByPostId(@PathVariable String postId,
-                                                             @PathVariable int page) {
+                                                                @PathVariable int page) {
         return ResponseEntity.ok(commentService.getCommentDTOByPostId(postId, page));
     }
 
-/*
-    update comment
- */
+    /*
+        update comment
+     */
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentDTO> updateComment(@RequestBody CommentDTO commentDTO) {
         return ResponseEntity.ok(commentService.updateComment(commentDTO));
     }
 
-/*
-    delete comment
- */
+    /*
+        delete comment
+     */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable String commentId) {
         commentService.deleteComment(commentId);

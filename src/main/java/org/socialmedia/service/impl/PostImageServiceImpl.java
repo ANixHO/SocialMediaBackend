@@ -51,6 +51,11 @@ public class PostImageServiceImpl implements PostImageService {
     }
 
     @Transactional
+    public void deletePostImagesByPostId(String postId){
+        postImageRepository.deleteByPostId(postId);
+    }
+
+    @Transactional
     @Override
     public void saveMultiplePostImages(String postId, List<MultipartFile> imageFiles, int lastOrder) throws IOException {
 

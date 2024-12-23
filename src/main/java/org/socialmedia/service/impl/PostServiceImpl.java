@@ -7,7 +7,6 @@ import org.socialmedia.model.Post;
 import org.socialmedia.model.PostImage;
 import org.socialmedia.repository.mongodb.PostImageRepository;
 import org.socialmedia.repository.mysql.PostRepository;
-import org.socialmedia.service.CommentService;
 import org.socialmedia.service.PostImageService;
 import org.socialmedia.service.PostService;
 import org.socialmedia.service.UserService;
@@ -22,12 +21,11 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements PostService {
 
-    private static final int POST_PAGE_SIZE = 15;
+    private static final int POST_PAGE_SIZE = 10;
 
     @Autowired
     private PostRepository postRepository;
@@ -53,8 +51,9 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public PostDTO updatePost(PostDTO postDTO, List<MultipartFile> imageFiles) throws IOException {
-        userService.isOwner(postDTO.getUserId());
         Post existingPost = getPostById(postDTO.getId());
+        userService.isOwner(existingPost.getUser().getId());
+
 
         if (postDTO.getTitle() != null) {
             existingPost.setTitle(titleValidate(postDTO.getTitle()));
@@ -66,7 +65,7 @@ public class PostServiceImpl implements PostService {
 
         existingPost.setUpdatedAt(LocalDateTime.now());
 
-        if (!imageFiles.isEmpty()) {
+        if (imageFiles != null) {
             int lastOrder = postImageService.getLastPostImage(postDTO.getId()).getOrders();
             postImageService.saveMultiplePostImages(postDTO.getId(), imageFiles, lastOrder);
         }
@@ -88,6 +87,7 @@ public class PostServiceImpl implements PostService {
         PostDTO postDTO = getPostDTOById(postId);
 
         userService.isOwner(postDTO.getUserId());
+        postImageService.deletePostImagesByPostId(postId);
         postRepository.deleteById(postDTO.getId());
     }
 
@@ -109,8 +109,9 @@ public class PostServiceImpl implements PostService {
     }
 
     public List<PostDTO> getPostsForExplore(int page) {
-        PageRequest pageRequest = PageRequest.of(page, POST_PAGE_SIZE, Sort.by("update_at").descending());
-        List<Post> posts = postRepository.findAll(pageRequest).getContent();
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        PageRequest pageRequest = PageRequest.of(page, POST_PAGE_SIZE, sort);
+        List<Post> posts= postRepository.findAll(pageRequest).getContent();
         List<PostDTO> postDTOS = new ArrayList<>();
         for (Post post : posts){
             postDTOS.add(convertToDTO(post));

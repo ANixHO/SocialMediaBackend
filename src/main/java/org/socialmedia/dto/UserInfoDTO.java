@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserInfoDTO {
     private String id;
     private String username;
+    // todo 23DEC add avatar id field and modify the user info dto return method as well
     private Binary avatarBinary;
     private MultipartFile avatarFile;
 

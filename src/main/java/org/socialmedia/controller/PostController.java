@@ -48,6 +48,7 @@ public class PostController {
                                            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         PostDTO postDTO = mapper.readValue(postJson, PostDTO.class);
+        postDTO.setId(postId);
         return ResponseEntity.ok(postService.updatePost(postDTO, images));
     }
 

@@ -12,6 +12,7 @@ public interface PostImageService {
     Optional<PostImage> getPostImage(String imageId);
     List<PostImage> getPostImagesByPostId(String postId);
     void deletePostImage(String postImageId);
+    void deletePostImagesByPostId(String postId);
     void savePostImage(String postId, MultipartFile imageFile, int order) throws IOException;
     void saveMultiplePostImages(String postId, List<MultipartFile> imagefiles, int lastOrder) throws IOException;
     PostImage getInitPostImage(String postId);

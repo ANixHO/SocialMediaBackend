@@ -46,9 +46,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(postService.getPostById(postId));
         comment.setUser(userService.getCurrUser());
         comment.setContent(validComment(content));
-        comment = commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
 
-        return convertToDTO(comment);
+        return convertToDTO(saved);
     }
 
 /*
@@ -65,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public List<CommentDTO> getCommentDTOByPostId(String postId, int page) {
-        PageRequest pageRequest = PageRequest.of(page, COMMENT_PAGE_SIZE, Sort.by("updated_at").descending());
+        PageRequest pageRequest = PageRequest.of(page, COMMENT_PAGE_SIZE, Sort.by("updatedAt").descending());
         Page<Comment> commentPage = commentRepository.findByPostId(postId, pageRequest);
         List<Comment> list = commentPage.getContent();
         List<CommentDTO> commentDTOS = new ArrayList<>();

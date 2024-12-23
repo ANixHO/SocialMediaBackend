@@ -73,7 +73,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         );
     }
 
-    // TODO: modify related problems
     public boolean isOwner(String userId) {
         User currUser = getCurrUser();
         if (currUser.getId().equals(userId)) {
