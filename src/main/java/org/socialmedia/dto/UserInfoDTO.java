@@ -7,6 +7,7 @@ public class UserInfoDTO {
     private String id;
     private String username;
     // todo 23DEC add avatar id field and modify the user info dto return method as well
+    private String avatarId;
     private Binary avatarBinary;
     private MultipartFile avatarFile;
 
@@ -27,6 +28,14 @@ public class UserInfoDTO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getAvatarId() {
+        return avatarId;
+    }
+
+    public void setAvatarId(String avatarId) {
+        this.avatarId = avatarId;
     }
 
     public Binary getAvatarBinary() {

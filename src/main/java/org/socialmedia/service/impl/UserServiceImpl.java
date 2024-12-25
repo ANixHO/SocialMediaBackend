@@ -34,9 +34,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 () -> new UsernameNotFoundException("User Name: [" + username + "] is not valid"));
     }
 
+    @Transactional
     public void deleteUser(String userId) {
         isOwner(userId);
         userRepository.deleteById(userId);
+        avatarService.deleteAvatarByUserId(userId);
     }
 
     @Transactional
@@ -46,7 +48,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 () -> new UserException("User not found")
         );
 
-        if (userInfoDTO.getUsername() != null) {
+        if (!userInfoDTO.getUsername().equals(user.getUsername())) {
             user.setUsername(userInfoDTO.getUsername());
         }
 
@@ -106,7 +108,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         dto.setUsername(user.getUsername());
 
         Avatar avatar = avatarService.getAvatarByUserId(user.getId());
-        dto.setAvatarBinary(avatar.getAvatar());
+        if (avatar != null) {
+            dto.setAvatarId(avatar.getId());
+            dto.setAvatarBinary(avatar.getAvatar());
+        }
         return dto;
     }
 

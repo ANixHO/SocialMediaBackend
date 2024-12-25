@@ -39,9 +39,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String avatarId){
+    public ResponseEntity<Void> deleteUser(@PathVariable String userId){
         try {
-            avatarService.deleteAvatar(avatarId);
+            userService.deleteUser(userId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             throw new RuntimeException(e);
