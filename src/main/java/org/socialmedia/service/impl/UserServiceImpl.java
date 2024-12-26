@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 () -> new UserException("User not found")
         );
 
-        if (!userInfoDTO.getUsername().equals(user.getUsername())) {
+        if ( userInfoDTO.getUsername() != null && !userInfoDTO.getUsername().equals(user.getUsername())) {
             user.setUsername(userInfoDTO.getUsername());
         }
 
@@ -58,15 +58,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                         userInfoDTO.getAvatarFile(), userInfoDTO.getId()
                 );
                 user.setAvatar(avatar);
-                userInfoDTO.setAvatarBinary(avatar.getAvatar());
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                userRepository.save(user);
             }
         }
+        user = userRepository.save(user);
 
-        return userInfoDTO;
+        return convertToUserInfoDTO(user);
     }
 
     public User getUser(String id) {
