@@ -1,19 +1,16 @@
 package org.socialmedia.service.impl;
 
-import org.socialmedia.model.Comment;
-import org.socialmedia.model.Post;
+import org.socialmedia.model.*;
 
 import java.util.List;
 
 public class PostResponse {
 
     private Post post;
+    private User user;
+    private PostImage initPostImage;
     private List<Comment> recentComments;
-    private List<Long> imageIdList;
-
-    public PostResponse(Post post) {
-        this.post = post;
-    }
+    private List<PostImage> postImageList;
 
     public Post getPost() {
         return post;
@@ -31,11 +28,27 @@ public class PostResponse {
         this.post = post;
     }
 
-    public List<Long> getImageIdList() {
-        return imageIdList;
+    public User getUser() {
+        return user;
     }
 
-    public void setImageIdList(List<Long> imageIdList) {
-        this.imageIdList = imageIdList;
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public PostImage getInitPostImage() {
+        return initPostImage;
+    }
+
+    public void setInitPostImage(PostImage initPostImage) {
+        this.initPostImage = initPostImage;
+    }
+
+    public List<PostImage> getPostImageList() {
+        return postImageList;
+    }
+
+    public void setPostImageList(List<PostImage> postImageList) {
+        this.postImageList = postImageList;
     }
 }

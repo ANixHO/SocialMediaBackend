@@ -6,14 +6,18 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletResponse;
 import org.socialmedia.utils.RSAKeyProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
@@ -36,13 +40,29 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Autowired
     public SecurityConfiguration(RSAKeyProperties keys) {
         this.keys = keys;
     }
+
+
+
+//    @Bean
+//    public DaoAuthenticationProvider daoAuthenticationProvider() {
+//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+//        authProvider.setUserDetailsService(userDetailsService);
+//        authProvider.setPasswordEncoder(passwordEncoder());
+//        return authProvider;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -61,12 +81,19 @@ public class SecurityConfiguration {
         return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
     }
 
+    @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+//        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // Debug print
+            System.out.println("JWT Claims: " + jwt.getClaims());
+            System.out.println("Roles claim: " + jwt.getClaimAsString("roles"));
+            return jwtGrantedAuthoritiesConverter.convert(jwt);
+        });
         return jwtAuthenticationConverter;
     }
 
@@ -98,7 +125,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfig corsConfig) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .headers(
                         headers -> {
@@ -117,21 +144,26 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(HttpBasicConfigurer::disable)
-                .logout(LogoutConfigurer::disable)
+                .logout(logout -> logout.
+                        logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authenticationProvider(daoAuthenticationProvider())
                 .authorizeHttpRequests(
                         auth -> {
 
                             auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                             auth.requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll();
-                            auth.requestMatchers("/api/posts/explore").permitAll();
-                            auth.requestMatchers(HttpMethod.GET,"/api/images/**").permitAll();
+                            auth.requestMatchers(HttpMethod.PUT, "/api/auth/changePassword").hasAnyRole("USER");
+
+                            auth.requestMatchers(HttpMethod.GET, "/api/posts/explore/**").permitAll();
+                            auth.requestMatchers(HttpMethod.GET,"/api/postImages/explore/**").permitAll();
+                            auth.requestMatchers("/api/user/**").permitAll();
+                            auth.requestMatchers("/api/auth/validateToken").hasAnyRole("USER", "ADMIN");
 
                             auth.requestMatchers("/api/posts/**").hasAnyRole("ADMIN", "USER");
-                            auth.requestMatchers("/api/posts/newpost").hasRole("USER");
-
+                            auth.requestMatchers("/api/postImages/postDetail/**").hasAnyRole("ADMIN","USER");
                             auth.requestMatchers("/api/comments/**").hasAnyRole("ADMIN", "USER");
-                            auth.requestMatchers(HttpMethod.DELETE,"/api/images/**").hasAnyRole("ADMIN", "USER");
                             auth.anyRequest().authenticated();
                         }
                 );

@@ -2,12 +2,17 @@ package org.socialmedia.service.impl;
 
 import org.socialmedia.Exceptions.InvalidInputException;
 import org.socialmedia.Exceptions.PostNotFoundException;
+import org.socialmedia.dto.PostDTO;
 import org.socialmedia.model.Post;
-import org.socialmedia.repository.PostRepository;
-import org.socialmedia.service.CommentService;
-import org.socialmedia.service.ImageService;
+import org.socialmedia.model.PostImage;
+import org.socialmedia.repository.mongodb.PostImageRepository;
+import org.socialmedia.repository.mysql.PostRepository;
+import org.socialmedia.service.PostImageService;
 import org.socialmedia.service.PostService;
+import org.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,97 +25,129 @@ import java.util.List;
 @Service
 public class PostServiceImpl implements PostService {
 
-    @Autowired
-    private CommentService commentService;
+    private static final int POST_PAGE_SIZE = 10;
+
     @Autowired
     private PostRepository postRepository;
     @Autowired
-    private ImageService imageService;
-
-
+    private PostImageService postImageService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PostImageRepository postImageRepository;
+// TODO modify hasMore attribute of post dto
     @Transactional
-    public Post createPost(Post post, List<MultipartFile> imageFiles) throws IOException {
-        if (post.getTitle() == null || post.getTitle().trim().isEmpty()) {
-            throw new InvalidInputException("Post title can not be empty");
-        }
-        if (post.getContentText() == null || post.getContentText().trim().isEmpty()) {
-            throw new InvalidInputException("Post content can not be empty");
-        }
+    public PostDTO createPost(Post post, List<MultipartFile> imageFiles) throws IOException {
 
-
-        post.setCreatedAt(LocalDateTime.now());
-        post.setLikePost(false);
+        post.setTitle(titleValidate(post.getTitle()));
+        post.setContentText(titleValidate(post.getContentText()));
+        post.setUser(userService.getCurrUser());
         Post savedPost = postRepository.save(post);
-        Long savedPostId = savedPost.getId();
 
-        imageService.saveImage(savedPostId, imageFiles);
+        postImageService.saveMultiplePostImages(savedPost.getId(), imageFiles, 0);
 
-        return savedPost;
+        return convertToDTO(savedPost);
     }
 
     @Transactional
-    public Post updatePost(Long id, Post post, List<MultipartFile> imageFiles) {
-        Post existingPost = getPostById(id);
+    public PostDTO updatePost(PostDTO postDTO, List<MultipartFile> imageFiles) throws IOException {
+        Post existingPost = getPostById(postDTO.getId());
+        userService.isOwner(existingPost.getUser().getId());
 
-        if (post.getTitle() != null) {
-            existingPost.setTitle(post.getTitle());
+
+        if (postDTO.getTitle() != null) {
+            existingPost.setTitle(titleValidate(postDTO.getTitle()));
         }
 
-        if (post.getContentText() != null) {
-            existingPost.setContentText(post.getContentText());
+        if (postDTO.getContentText() != null) {
+            existingPost.setContentText(contentTextValidate(postDTO.getContentText()));
         }
 
         existingPost.setUpdatedAt(LocalDateTime.now());
-        if (!imageFiles.isEmpty()) {
-            imageService.saveImage(id, imageFiles);
+
+        if (imageFiles != null) {
+            int lastOrder = postImageService.getLastPostImage(postDTO.getId()).getOrders();
+            postImageService.saveMultiplePostImages(postDTO.getId(), imageFiles, lastOrder);
         }
-
-        return postRepository.save(existingPost);
+        existingPost = postRepository.save(existingPost);
+        return convertToDTO(existingPost);
     }
 
-    public PostResponse getPostResponseByPostId(Long id) {
-        PostResponse postResponse = new PostResponse(getPostById(id));
-        postResponse.setRecentComments(commentService.getRecentCommentByPostId(id, 5));
-        postResponse.setImageIdList(imageService.getImageUrlsByPostId(id));
-
-        return postResponse;
-    }
-
-
-    public List<PostResponse> getAllPostResponses() {
-        List<Post> postList = postRepository.findAll();
-        List<PostResponse> postResponses = new ArrayList<>();
-
-        for (Post post : postList) {
-            postResponses.add(getPostResponseByPostId(post.getId()));
-        }
-
-        return postResponses;
-    }
-
-    public Post getPostById(Long id) {
-        return postRepository.findById(id)
+    public Post getPostById(String id){
+       return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post not found with id: " + id));
     }
 
+    public PostDTO getPostDTOById(String id) {
+         return convertToDTO(getPostById(id));
+    }
 
     @Transactional
-    public void deletePost(Long id) {
-        imageService.deleteImageByPostId(id);
-        postRepository.deleteById(id);
+    public void deletePost(String postId) {
+        PostDTO postDTO = getPostDTOById(postId);
+
+        userService.isOwner(postDTO.getUserId());
+        postImageService.deletePostImagesByPostId(postId);
+        postRepository.deleteById(postDTO.getId());
     }
 
-    public boolean likeFunction(Long postId) {
-        Post post = getPostById(postId);
-        if (post.isLikePost()) {
-            post.setLikePost(false);
-        } else {
-            post.setLikePost(true);
+    @Transactional
+    public void deletePostImage(String postId, List<String> postImageIdList){
+        PostDTO postDTO = getPostDTOById(postId);
+        userService.isOwner(postDTO.getUserId());
+
+        for (String postImageId : postImageIdList){
+            PostImage image = postImageRepository.findById(postImageId).orElseThrow(
+                    ()->new PostNotFoundException("Post image id: " + postImageId + " of post id: " + postId + " not found")
+            );
+            if (image.getPostId().equals(postId)) {
+                postImageService.deletePostImage(postImageId);
+            } else {
+                throw new PostNotFoundException("Post image id: " + postImageId + " is not belong to post id: " + postId );
+            }
         }
-        postRepository.save(post);
+    }
 
-        return post.isLikePost();
+    public List<PostDTO> getPostsForExplore(int page) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        PageRequest pageRequest = PageRequest.of(page, POST_PAGE_SIZE, sort);
+        List<Post> posts= postRepository.findAll(pageRequest).getContent();
+        List<PostDTO> postDTOS = new ArrayList<>();
+        for (Post post : posts){
+            postDTOS.add(convertToDTO(post));
+        }
+        return postDTOS;
     }
 
 
+    public PostDTO getSinglePost(String postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post Not Found"));
+        return convertToDTO(post);
+    }
+
+    private PostDTO convertToDTO(Post post){
+        PostDTO dto = new PostDTO();
+        dto.setId(post.getId());
+        dto.setTitle(post.getTitle());
+        dto.setContentText(post.getContentText());
+        dto.setDateTime(post.getUpdatedAt());
+        dto.setUserId(post.getUser().getId());
+
+        return dto;
+    }
+
+    private String titleValidate(String title){
+        if (title.isEmpty() || title.trim().isEmpty()) {
+            throw new InvalidInputException("Post title can not be empty");
+        }
+        return title;
+    }
+
+    private String contentTextValidate(String contentText){
+        if (contentText == null || contentText.trim().isEmpty()) {
+            throw new InvalidInputException("Post content can not be empty");
+        }
+        return contentText;
+    }
 }

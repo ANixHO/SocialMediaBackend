@@ -1,39 +1,60 @@
 package org.socialmedia.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "posts", indexes = {
-        @Index(name = "index_title_fulltext", columnList = "title", unique = false),
-        @Index(name = "index_content_text", columnList = "contentText", unique = false)
-})
+@Table(name = "posts")
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(
+            columnDefinition = "TEXT",
+            nullable = false
+    )
     private String contentText;
 
     @Column(nullable = false)
-    private boolean likePost;
-
-    @Column(nullable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Long getId() {
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.REMOVE,
+            fetch = FetchType.LAZY
+    )
+    private List<Comment> comments;
+
+    public Post() {
+    }
+
+    public Post(String id){
+        this.id = id;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -70,12 +91,19 @@ public class Post {
         this.updatedAt = updatedAt;
     }
 
-    public boolean isLikePost() {
-        return likePost;
+    public List<Comment> getComments() {
+        return comments;
     }
 
-    public void setLikePost(boolean likePost) {
-        this.likePost = likePost;
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

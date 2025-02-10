@@ -1,4 +1,4 @@
-package org.socialmedia.repository;
+package org.socialmedia.repository.mysql;
 
 import org.socialmedia.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
